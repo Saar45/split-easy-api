@@ -14,12 +14,8 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 final class UserController extends AbstractController
 {
     #[Route('/me', name: 'me', methods: ['GET'])]
-    public function me(#[CurrentUser] ?Utilisateur $user): JsonResponse
+    public function me(#[CurrentUser] Utilisateur $user): JsonResponse
     {
-        if ($user === null) {
-            return $this->json(['error' => 'Unauthenticated'], 401);
-        }
-
         return $this->json([
             'id' => $user->getId(),
             'email' => $user->getEmail(),

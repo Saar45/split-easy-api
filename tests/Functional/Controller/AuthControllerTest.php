@@ -18,7 +18,7 @@ final class AuthControllerTest extends WebTestCase
     {
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class)->execute();
+        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
     }
 
     public function testRegisterValidReturns201(): void

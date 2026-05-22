@@ -25,8 +25,9 @@ final class AuthController extends AbstractController
     {
         try {
             $user = $this->authService->registerUser($dto);
-        } catch (EmailAlreadyTakenException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_CONFLICT);
+        } catch (EmailAlreadyTakenException) {
+            // Message générique — éviter d'aider à l'énumération de comptes.
+            return $this->json(['error' => 'Inscription impossible avec ces informations.'], Response::HTTP_CONFLICT);
         }
 
         return $this->json([

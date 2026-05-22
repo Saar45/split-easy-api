@@ -6,8 +6,8 @@ namespace App\Exception;
 
 final class EmailAlreadyTakenException extends \DomainException
 {
-    public function __construct(string $email)
+    public function __construct(string $email, ?\Throwable $previous = null)
     {
-        parent::__construct(sprintf('Email "%s" is already in use.', $email));
+        parent::__construct(sprintf('Email "%s" is already in use.', $email), 0, $previous);
     }
 }
