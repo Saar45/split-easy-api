@@ -1,0 +1,7 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: App\Entity\RefreshToken
+    # 14 jours, configurable par env si besoin.
+    ttl: 1209600
+    return_expiration: true
+    # Rotation des refresh tokens à chaque usage (best practice OWASP).
+    single_use: true
