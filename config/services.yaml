@@ -21,3 +21,8 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Security\AuthenticationSuccessHandler:
+        arguments:
+            $lexikHandler: '@lexik_jwt_authentication.handler.authentication_success'
+            $refreshTokenTtl: '%gesdinet_jwt_refresh_token.ttl%'
