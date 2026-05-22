@@ -34,7 +34,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'photo_profil', type: 'string', length: 255, nullable: true)]
     private ?string $photoProfil = null;
 
-    #[ORM\Column(name: 'date_inscription', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_inscription', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateInscription;
 
     #[ORM\Column(name: 'email_verifie', type: 'boolean', options: ['default' => false])]
@@ -43,7 +43,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'token_reinitialisation', type: 'string', length: 100, nullable: true)]
     private ?string $tokenReinitialisation = null;
 
-    #[ORM\Column(name: 'date_token_reinitialisation', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_token_reinitialisation', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateTokenReinitialisation = null;
 
     public function __construct()

@@ -34,10 +34,10 @@ class Notification
     #[ORM\Column(name: 'est_lu', type: 'boolean', options: ['default' => false])]
     private bool $estLu = false;
 
-    #[ORM\Column(name: 'date_creation', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_creation', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateCreation;
 
-    #[ORM\Column(name: 'date_lecture', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_lecture', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateLecture = null;
 
     #[ORM\Column(name: 'reference_type', type: 'string', length: 50, nullable: true)]

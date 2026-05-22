@@ -32,13 +32,13 @@ class Remboursement
     )]
     private StatutRemboursement $statut = StatutRemboursement::EnAttente;
 
-    #[ORM\Column(name: 'date_creation', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_creation', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateCreation;
 
-    #[ORM\Column(name: 'date_proposition', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_proposition', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateProposition = null;
 
-    #[ORM\Column(name: 'date_validation', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_validation', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateValidation = null;
 
     #[ORM\ManyToOne(targetEntity: Groupe::class)]

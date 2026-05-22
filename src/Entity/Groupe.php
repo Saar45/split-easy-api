@@ -26,7 +26,7 @@ class Groupe
     #[ORM\Column(name: 'description', type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(name: 'date_creation', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_creation', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateCreation;
 
     #[ORM\Column(

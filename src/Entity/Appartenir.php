@@ -25,7 +25,7 @@ class Appartenir
     #[ORM\JoinColumn(name: 'id_groupe', referencedColumnName: 'id_groupe', nullable: false)]
     private Groupe $groupe;
 
-    #[ORM\Column(name: 'date_adhesion', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_adhesion', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateAdhesion = null;
 
     #[ORM\Column(
@@ -40,7 +40,7 @@ class Appartenir
     #[ORM\Column(name: 'token_invitation', type: 'string', length: 250, unique: true)]
     private string $tokenInvitation;
 
-    #[ORM\Column(name: 'date_invitation', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_invitation', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateInvitation;
 
     #[ORM\Column(
