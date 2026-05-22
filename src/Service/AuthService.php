@@ -1,0 +1,45 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Service;
+
+use App\Dto\RegisterDto;
+use App\Entity\Utilisateur;
+use App\Exception\EmailAlreadyTakenException;
+use App\Repository\UtilisateurRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+final class AuthService
+{
+    public function __construct(
+        private readonly UtilisateurRepository $userRepository,
+        private readonly UserPasswordHasherInterface $passwordHasher,
+        private readonly EntityManagerInterface $em,
+        private readonly LoggerInterface $logger,
+    ) {
+    }
+
+    /** @throws EmailAlreadyTakenException */
+    public function registerUser(RegisterDto $dto): Utilisateur
+    {
+        if ($this->userRepository->findOneBy(['email' => $dto->email]) !== null) {
+            throw new EmailAlreadyTakenException($dto->email);
+        }
+
+        $user = new Utilisateur();
+        $user->setNom($dto->nom);
+        $user->setPrenom($dto->prenom);
+        $user->setEmail($dto->email);
+        $user->setMotDePasse($this->passwordHasher->hashPassword($user, $dto->motDePasse));
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        $this->logger->info('User registered', ['email' => $user->getEmail(), 'id' => $user->getId()]);
+
+        return $user;
+    }
+}
