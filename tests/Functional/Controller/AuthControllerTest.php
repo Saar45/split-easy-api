@@ -127,6 +127,25 @@ final class AuthControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(401);
     }
 
+    public function testLoginThrottlingReturns429AfterFiveAttempts(): void
+    {
+        $this->register('throttle@test.com', 'SecurePass1');
+
+        for ($i = 1; $i <= 5; $i++) {
+            $this->jsonRequest('POST', '/api/login', [
+                'email' => 'throttle@test.com',
+                'motDePasse' => 'WrongPass1',
+            ]);
+            self::assertResponseStatusCodeSame(401, "Tentative $i devrait renvoyer 401");
+        }
+
+        $this->jsonRequest('POST', '/api/login', [
+            'email' => 'throttle@test.com',
+            'motDePasse' => 'WrongPass1',
+        ]);
+        self::assertResponseStatusCodeSame(429);
+    }
+
     private function jsonRequest(string $method, string $uri, array $payload): void
     {
         $this->client->request(

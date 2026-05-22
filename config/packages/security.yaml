@@ -23,7 +23,7 @@ security:
                 username_path: email
                 password_path: motDePasse
                 success_handler: lexik_jwt_authentication.handler.authentication_success
-                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+                failure_handler: App\Security\AuthenticationFailureHandler
             # Rate limiting OWASP A07 — 5 tentatives par 15 min par IP (dossier §3.4.4).
             login_throttling:
                 max_attempts: 5
