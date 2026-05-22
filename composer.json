@@ -1,4 +1,6 @@
 {
+    "name": "saar45/split-easy-api",
+    "description": "API REST Symfony de Split-Easy — gestion de dépenses partagées entre groupes (projet CDA IPSSI 2025-2026).",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
