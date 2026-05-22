@@ -1,0 +1,80 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: spliteasy_nginx
+    depends_on:
+      - app
+    ports:
+      - "${NGINX_HTTP_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/app:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - spliteasy
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: spliteasy_app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.local
+        required: false
+    volumes:
+      - .:/var/www/app
+    networks:
+      - spliteasy
+
+  db:
+    image: mysql:8.0
+    container_name: spliteasy_db
+    command: --default-authentication-plugin=caching_sha2_password
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.local
+        required: false
+    ports:
+      - "${DB_HOST_PORT:-3306}:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - spliteasy
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: spliteasy_phpmyadmin
+    profiles: ["dev"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: true
+      - path: .env.local
+        required: false
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "${PMA_HOST_PORT:-8081}:80"
+    networks:
+      - spliteasy
+
+networks:
+  spliteasy:
+    driver: bridge
+
+volumes:
+  db_data:

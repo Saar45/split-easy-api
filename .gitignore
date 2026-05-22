@@ -1,0 +1,45 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Env files — commited : .env, .env.example, .env.staging, .env.prod
+# Non commited : .env.local et .env.*.local (override locaux avec secrets)
+/.env.local
+/.env.*.local
+/.env.local.php
+
+# Symfony
+/vendor/
+/var/
+/public/build/
+/public/uploads/
+/public/bundles/
+.phpunit.result.cache
+.phpunit.cache/
+/config/jwt/*.pem
+
+# Docker (runtime data au cas où)
+/docker/mysql/data/
+
+# Outils analyse statique
+/.phpstan-cache/
+/.php-cs-fixer.cache
+/phpcs.cache
+
+# Tests / coverage
+/coverage/
+
+# Claude Code (briefs locaux, non livrables)
+/.claude/
+CLAUDE.md
+CLAUDE*.md
