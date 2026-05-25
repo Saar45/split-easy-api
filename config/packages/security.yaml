@@ -22,12 +22,18 @@ security:
                 check_path: /api/login
                 username_path: email
                 password_path: motDePasse
-                success_handler: lexik_jwt_authentication.handler.authentication_success
+                success_handler: App\Security\AuthenticationSuccessHandler
                 failure_handler: App\Security\AuthenticationFailureHandler
-            # Rate limiting OWASP A07 — 5 tentatives par 15 min par IP (dossier §3.4.4).
+            # Rate limiting OWASP A07 : 5 tentatives par 15 min par IP (dossier §3.4.4).
             login_throttling:
                 max_attempts: 5
                 interval: '15 minutes'
+
+        api_token_refresh:
+            pattern: ^/api/token/refresh$
+            stateless: true
+            refresh_jwt:
+                check_path: /api/token/refresh
 
         api:
             pattern: ^/api
@@ -38,6 +44,7 @@ security:
     access_control:
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/token/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

@@ -127,22 +127,55 @@ final class AuthControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(401);
     }
 
+    public function testLoginReturnsRefreshToken(): void
+    {
+        $this->register('refresh@test.com', 'SecurePass1');
+
+        $this->jsonRequest('POST', '/api/login', [
+            'email' => 'refresh@test.com',
+            'motDePasse' => 'SecurePass1',
+        ]);
+
+        self::assertResponseIsSuccessful();
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertArrayHasKey('refresh_token', $body);
+        self::assertNotEmpty($body['refresh_token']);
+        self::assertArrayHasKey('refresh_token_expiration', $body);
+    }
+
+    public function testRefreshTokenReturnsNewAccessToken(): void
+    {
+        $this->register('rotate@test.com', 'SecurePass1');
+        $this->jsonRequest('POST', '/api/login', ['email' => 'rotate@test.com', 'motDePasse' => 'SecurePass1']);
+        $login = json_decode($this->client->getResponse()->getContent(), true);
+
+        $this->jsonRequest('POST', '/api/token/refresh', ['refresh_token' => $login['refresh_token']]);
+
+        self::assertResponseIsSuccessful();
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertArrayHasKey('token', $body);
+        self::assertArrayHasKey('refresh_token', $body);
+        self::assertNotSame($login['refresh_token'], $body['refresh_token']);
+    }
+
+    public function testRefreshWithInvalidTokenReturns401(): void
+    {
+        $this->jsonRequest('POST', '/api/token/refresh', ['refresh_token' => 'invalid_token']);
+        self::assertResponseStatusCodeSame(401);
+    }
+
     public function testLoginThrottlingReturns429AfterFiveAttempts(): void
     {
-        $this->register('throttle@test.com', 'SecurePass1');
+        // Email unique par run pour éviter la pollution du rate limiter entre invocations PHPUnit.
+        $email = 'throttle_' . uniqid() . '@test.com';
+        $this->register($email, 'SecurePass1');
 
         for ($i = 1; $i <= 5; $i++) {
-            $this->jsonRequest('POST', '/api/login', [
-                'email' => 'throttle@test.com',
-                'motDePasse' => 'WrongPass1',
-            ]);
+            $this->jsonRequest('POST', '/api/login', ['email' => $email, 'motDePasse' => 'WrongPass1']);
             self::assertResponseStatusCodeSame(401, "Tentative $i devrait renvoyer 401");
         }
 
-        $this->jsonRequest('POST', '/api/login', [
-            'email' => 'throttle@test.com',
-            'motDePasse' => 'WrongPass1',
-        ]);
+        $this->jsonRequest('POST', '/api/login', ['email' => $email, 'motDePasse' => 'WrongPass1']);
         self::assertResponseStatusCodeSame(429);
     }
 
