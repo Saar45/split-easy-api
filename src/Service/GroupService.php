@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Dto\CreateGroupDto;
+use App\Dto\UpdateGroupDto;
 use App\Entity\Appartenir;
 use App\Entity\Groupe;
 use App\Entity\Utilisateur;
@@ -75,9 +76,27 @@ final class GroupService
         $appartenir = $this->appartenirRepository->findOneBy([
             'groupe' => $groupe,
             'utilisateur' => $user,
+            'statutInvitation' => StatutInvitation::Acceptee,
         ]);
 
         return $appartenir !== null && $appartenir->getRole() === RoleAppartenir::Createur;
+    }
+
+    public function updateGroup(Groupe $groupe, UpdateGroupDto $dto): Groupe
+    {
+        if ($dto->nom !== null) {
+            $groupe->setNom($dto->nom);
+        }
+        if ($dto->description !== null) {
+            $groupe->setDescription($dto->description);
+        }
+        if ($dto->couleur !== null) {
+            $groupe->setCouleur($dto->couleur);
+        }
+
+        $this->em->flush();
+
+        return $groupe;
     }
 
     public function deleteGroup(Groupe $groupe): void

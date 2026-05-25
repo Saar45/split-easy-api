@@ -115,7 +115,7 @@ final class GroupControllerTest extends WebTestCase
         self::assertSame('Groupe A', $body[0]['nom']);
     }
 
-    public function testShowGroupReturns404WhenUserIsNotMember(): void
+    public function testShowGroupReturnsForbiddenWhenUserIsNotMember(): void
     {
         $emailA = 'owner_' . uniqid() . '@test.com';
         $emailB = 'outsider_' . uniqid() . '@test.com';
@@ -152,6 +152,55 @@ final class GroupControllerTest extends WebTestCase
         ]);
 
         self::assertResponseStatusCodeSame(204);
+        self::assertEmpty($this->client->getResponse()->getContent());
+    }
+
+    public function testUpdateGroupReturnsUpdatedForCreator(): void
+    {
+        $email = 'upd_creator_' . uniqid() . '@test.com';
+        $this->register($email, 'SecurePass1');
+        $token = $this->loginAndGetToken($email, 'SecurePass1');
+
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'Before'], $token);
+        $groupId = json_decode($this->client->getResponse()->getContent(), true)['id'];
+
+        $this->jsonRequest('PUT', '/api/groups/' . $groupId, ['nom' => 'After', 'couleur' => '#FF9800'], $token);
+
+        self::assertResponseIsSuccessful();
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertSame('After', $body['nom']);
+        self::assertSame('#FF9800', $body['couleur']);
+    }
+
+    public function testUpdateGroupReturns403ForNonCreator(): void
+    {
+        $emailCreator = 'upd_owner_' . uniqid() . '@test.com';
+        $emailOther = 'upd_other_' . uniqid() . '@test.com';
+        $this->register($emailCreator, 'SecurePass1');
+        $this->register($emailOther, 'SecurePass1');
+        $tokenCreator = $this->loginAndGetToken($emailCreator, 'SecurePass1');
+        $tokenOther = $this->loginAndGetToken($emailOther, 'SecurePass1');
+
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'Locked'], $tokenCreator);
+        $groupId = json_decode($this->client->getResponse()->getContent(), true)['id'];
+
+        $this->jsonRequest('PUT', '/api/groups/' . $groupId, ['nom' => 'Hacked'], $tokenOther);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testUpdateGroupReturns422ForInvalidCouleur(): void
+    {
+        $email = 'upd_invalid_' . uniqid() . '@test.com';
+        $this->register($email, 'SecurePass1');
+        $token = $this->loginAndGetToken($email, 'SecurePass1');
+
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'Group'], $token);
+        $groupId = json_decode($this->client->getResponse()->getContent(), true)['id'];
+
+        $this->jsonRequest('PUT', '/api/groups/' . $groupId, ['couleur' => 'not-a-hex'], $token);
+
+        self::assertResponseStatusCodeSame(422);
     }
 
     public function testDeleteGroupReturns403ForRegularMember(): void

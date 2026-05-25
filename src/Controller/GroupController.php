@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\CreateGroupDto;
+use App\Dto\UpdateGroupDto;
 use App\Entity\Groupe;
 use App\Entity\Utilisateur;
 use App\Security\Voter\GroupVoter;
@@ -49,13 +50,24 @@ final class GroupController extends AbstractController
         return $this->json($this->serialize($groupe));
     }
 
+    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\d+'])]
+    public function update(
+        Groupe $groupe,
+        #[MapRequestPayload] UpdateGroupDto $dto,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted(GroupVoter::EDIT, $groupe);
+        $updated = $this->groupService->updateGroup($groupe, $dto);
+
+        return $this->json($this->serialize($updated));
+    }
+
     #[Route('/{id}', name: 'delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
-    public function delete(Groupe $groupe): JsonResponse
+    public function delete(Groupe $groupe): Response
     {
         $this->denyAccessUnlessGranted(GroupVoter::DELETE, $groupe);
         $this->groupService->deleteGroup($groupe);
 
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        return new Response('', Response::HTTP_NO_CONTENT);
     }
 
     /** @return array<string, mixed> */

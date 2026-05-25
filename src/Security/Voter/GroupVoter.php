@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 final class GroupVoter extends Voter
 {
     public const VIEW = 'GROUP_VIEW';
+    public const EDIT = 'GROUP_EDIT';
     public const DELETE = 'GROUP_DELETE';
 
     public function __construct(private readonly GroupService $groupService)
@@ -21,7 +22,7 @@ final class GroupVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return in_array($attribute, [self::VIEW, self::DELETE], true) && $subject instanceof Groupe;
+        return in_array($attribute, [self::VIEW, self::EDIT, self::DELETE], true) && $subject instanceof Groupe;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool
@@ -33,7 +34,7 @@ final class GroupVoter extends Voter
 
         return match ($attribute) {
             self::VIEW => $this->groupService->isMember($subject, $user),
-            self::DELETE => $this->groupService->isCreator($subject, $user),
+            self::EDIT, self::DELETE => $this->groupService->isCreator($subject, $user),
         };
     }
 }
