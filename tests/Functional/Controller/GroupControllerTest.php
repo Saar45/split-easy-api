@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Appartenir;
+use App\Entity\Depense;
 use App\Entity\Groupe;
+use App\Entity\Repartir;
 use App\Entity\Utilisateur;
 use App\Enum\RoleAppartenir;
 use App\Enum\StatutInvitation;
@@ -20,11 +22,31 @@ final class GroupControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
+        // Vide le pool cache.app (rate limiter) avant chaque test pour éviter le throttling cumulé.
+        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        if (is_dir($cacheDir)) {
+            self::removeDir($cacheDir);
+        }
+
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
+        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
+        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
         $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
         $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
         $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+    }
+
+    private static function removeDir(string $dir): void
+    {
+        foreach (scandir($dir) ?: [] as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+            $path = $dir . '/' . $item;
+            is_dir($path) ? self::removeDir($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 
     public function testCreateGroupReturns201AndAutoAddsCreator(): void

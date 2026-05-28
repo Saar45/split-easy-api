@@ -27,7 +27,9 @@ final class CreateExpenseDto
 
         #[Assert\NotNull(message: 'Les bénéficiaires sont obligatoires.')]
         #[Assert\Count(min: 1, minMessage: 'Au moins un bénéficiaire est requis.')]
+        #[Assert\Unique(message: 'Les bénéficiaires ne doivent pas contenir de doublons.')]
         #[Assert\All([
+            new Assert\Type(type: 'integer', message: 'Chaque identifiant de bénéficiaire doit être un entier.'),
             new Assert\Positive(message: 'Chaque identifiant de bénéficiaire doit être positif.'),
         ])]
         public readonly ?array $beneficiaire_ids = null,

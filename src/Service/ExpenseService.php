@@ -35,6 +35,10 @@ final class ExpenseService
 
     public function createExpenseForGroup(Groupe $groupe, Utilisateur $payeur, CreateExpenseDto $dto): Depense
     {
+        if ($dto->id_categorie === null || $dto->montant === null || $dto->beneficiaire_ids === null) {
+            throw new UnprocessableEntityHttpException('Champs obligatoires manquants.');
+        }
+
         $categorie = $this->categorieRepository->find($dto->id_categorie);
         if ($categorie === null) {
             throw new UnprocessableEntityHttpException(sprintf('Catégorie %d introuvable.', $dto->id_categorie));
@@ -54,9 +58,11 @@ final class ExpenseService
             ? new \DateTimeImmutable($dto->date_depense)
             : new \DateTimeImmutable();
 
+        $montantString = number_format($dto->montant, 2, '.', '');
+
         $depense = (new Depense())
             ->setDescription($dto->description)
-            ->setMontant(number_format($dto->montant, 2, '.', ''))
+            ->setMontant($montantString)
             ->setDateDepense($dateDepense)
             ->setCategorie($categorie)
             ->setPayeur($payeur)
@@ -65,24 +71,28 @@ final class ExpenseService
 
         $this->em->persist($depense);
 
-        // Positionner le payeur en dernier pour lui attribuer le surplus d'arrondi (§6.3.2)
-        $benefIds = $dto->beneficiaire_ids;
-        if (in_array($payeur->getId(), $benefIds, true)) {
-            $benefIds = array_filter($benefIds, fn (int $id) => $id !== $payeur->getId());
-            $benefIds = array_values($benefIds);
+        // Payeur en dernier pour lui attribuer le surplus d'arrondi (§6.3.2).
+        $benefIds = array_values(array_filter($dto->beneficiaire_ids, fn (int $id) => $id !== $payeur->getId()));
+        if (in_array($payeur->getId(), $dto->beneficiaire_ids, true)) {
             $benefIds[] = $payeur->getId();
         }
 
-        $parts = $this->splitCalculator->calculateEqual(number_format($dto->montant, 2, '.', ''), $benefIds);
+        $parts = $this->splitCalculator->calculateEqual($montantString, $benefIds);
+
+        // Batch load des bénéficiaires pour éviter N+1.
+        $beneficiaires = $this->utilisateurRepository->findBy(['id' => array_keys($parts)]);
+        $byId = [];
+        foreach ($beneficiaires as $b) {
+            $byId[$b->getId()] = $b;
+        }
 
         foreach ($parts as $userId => $montantPart) {
-            $beneficiaire = $this->utilisateurRepository->find($userId);
-            if ($beneficiaire === null) {
-                continue;
+            if (!isset($byId[$userId])) {
+                throw new UnprocessableEntityHttpException(sprintf('Bénéficiaire %d introuvable.', $userId));
             }
 
             $repartir = (new Repartir())
-                ->setBeneficiaire($beneficiaire)
+                ->setBeneficiaire($byId[$userId])
                 ->setDepense($depense)
                 ->setMontantPart($montantPart);
 

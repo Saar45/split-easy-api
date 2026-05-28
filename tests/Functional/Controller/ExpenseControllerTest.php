@@ -24,14 +24,19 @@ final class ExpenseControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
+        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        if (is_dir($cacheDir)) {
+            self::removeDir($cacheDir);
+        }
+
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->em->createQuery('DELETE FROM ' . Repartir::class)->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class)->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class)->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class)->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class)->execute();
+        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
+        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
+        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
+        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
+        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
 
         $categorie = $this->em->getRepository(Categorie::class)->findOneBy([]);
         if ($categorie === null) {
@@ -45,6 +50,18 @@ final class ExpenseControllerTest extends WebTestCase
         }
 
         $this->categorieId = $categorie->getId();
+    }
+
+    private static function removeDir(string $dir): void
+    {
+        foreach (scandir($dir) ?: [] as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+            $path = $dir . '/' . $item;
+            is_dir($path) ? self::removeDir($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 
     public function testCreateExpenseReturns201AndPersistDepenseAndRepartitions(): void
