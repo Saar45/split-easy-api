@@ -132,10 +132,17 @@ final class DebtOptimizerService
             }
         }
 
-        $guard = 0;
+        // Borne théorique : à chaque itération au moins un membre est retiré
+        // (créancier ou débiteur), donc on converge en au plus n - 1 transactions.
+        $maxIterations = max(0, count($balances) - 1);
+        $iterations = 0;
         while (count($creditors) > 0 && count($debtors) > 0) {
-            if (++$guard > 1000) {
-                break; // garde-fou : ne devrait jamais atteindre n - 1 itérations
+            if (++$iterations > $maxIterations) {
+                throw new \RuntimeException(sprintf(
+                    'DebtOptimizerService: greedy did not converge in %d iterations (n=%d).',
+                    $maxIterations,
+                    count($balances)
+                ));
             }
 
             $maxCredId = $this->argMaxBalance($creditors);

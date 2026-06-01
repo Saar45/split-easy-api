@@ -139,6 +139,7 @@ final class BalancesControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
 
         $this->jsonRequest('POST', '/api/login', ['email' => $email, 'motDePasse' => 'SecurePass1'], null);
+        self::assertResponseIsSuccessful();
 
         return json_decode($this->client->getResponse()->getContent(), true)['token'];
     }
@@ -146,6 +147,7 @@ final class BalancesControllerTest extends WebTestCase
     private function createGroup(string $token): int
     {
         $this->jsonRequest('POST', '/api/groups', ['nom' => 'G ' . uniqid()], $token);
+        self::assertResponseStatusCodeSame(201);
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
     }
@@ -153,6 +155,7 @@ final class BalancesControllerTest extends WebTestCase
     private function getCurrentUserId(string $token): int
     {
         $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
+        self::assertResponseIsSuccessful();
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
     }

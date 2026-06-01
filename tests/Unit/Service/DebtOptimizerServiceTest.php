@@ -14,7 +14,6 @@ use App\Repository\DepenseRepository;
 use App\Repository\RemboursementRepository;
 use App\Repository\RepartirRepository;
 use App\Service\DebtOptimizerService;
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use PHPUnit\Framework\TestCase;
