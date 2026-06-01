@@ -27,10 +27,10 @@ class Remboursement
         name: 'statut',
         type: 'string',
         enumType: StatutRemboursement::class,
-        options: ['default' => 'en_attente'],
-        columnDefinition: "ENUM('en_attente','propose','valide','conteste') NOT NULL DEFAULT 'en_attente'",
+        options: ['default' => 'propose'],
+        columnDefinition: "ENUM('en_attente','propose','valide','conteste','annule') NOT NULL DEFAULT 'propose'",
     )]
-    private StatutRemboursement $statut = StatutRemboursement::EnAttente;
+    private StatutRemboursement $statut = StatutRemboursement::Propose;
 
     #[ORM\Column(name: 'date_creation', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateCreation;

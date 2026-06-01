@@ -10,4 +10,5 @@ enum StatutRemboursement: string
     case Propose = 'propose';
     case Valide = 'valide';
     case Conteste = 'conteste';
+    case Annule = 'annule';
 }
