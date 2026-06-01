@@ -9,6 +9,7 @@ use App\Dto\UpdateGroupDto;
 use App\Entity\Groupe;
 use App\Entity\Utilisateur;
 use App\Security\Voter\GroupVoter;
+use App\Service\DebtOptimizerService;
 use App\Service\GroupService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,8 +21,10 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 #[Route('/api/groups', name: 'api_groups_')]
 final class GroupController extends AbstractController
 {
-    public function __construct(private readonly GroupService $groupService)
-    {
+    public function __construct(
+        private readonly GroupService $groupService,
+        private readonly DebtOptimizerService $debtOptimizer,
+    ) {
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
@@ -68,6 +71,14 @@ final class GroupController extends AbstractController
         $this->groupService->deleteGroup($groupe);
 
         return new Response('', Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/{id}/balances', name: 'balances', methods: ['GET'], requirements: ['id' => '\d+'])]
+    public function balances(Groupe $groupe): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(GroupVoter::VIEW, $groupe);
+
+        return $this->json($this->debtOptimizer->computeForGroup($groupe));
     }
 
     /** @return array<string, mixed> */
