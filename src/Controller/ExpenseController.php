@@ -111,6 +111,7 @@ final class ExpenseController extends AbstractController
             'prenom' => $r->getBeneficiaire()->getPrenom(),
             'nom' => $r->getBeneficiaire()->getNom(),
             'montant_part' => $r->getMontantPart(),
+            'pourcentage' => $r->getPourcentage(),
         ], $repartitions);
 
         return $base;
