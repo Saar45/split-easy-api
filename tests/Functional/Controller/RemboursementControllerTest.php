@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Appartenir;
-use App\Entity\Categorie;
 use App\Entity\Depense;
 use App\Entity\Groupe;
 use App\Entity\Remboursement;

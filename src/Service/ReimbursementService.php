@@ -93,8 +93,9 @@ final class ReimbursementService
     {
         $this->ensureCurrentStatus($rb, StatutRemboursement::Propose, 'rejeter');
 
+        // date_validation ne reflète qu'une validation positive : on ne la
+        // renseigne pas sur un rejet pour éviter l'ambiguïté côté API.
         $rb->setStatut(StatutRemboursement::Conteste);
-        $rb->setDateValidation(new \DateTimeImmutable());
         $this->em->flush();
 
         return $rb;
