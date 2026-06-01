@@ -131,8 +131,27 @@ final class ExpenseService
             return [$this->splitCalculator->calculateCustom($montant, $normalized), []];
         }
 
-        // Pourcentage : on calcule les montants et on conserve les pourcentages.
-        return [$this->splitCalculator->calculatePercentages($montant, $normalized), $normalized];
+        // Pourcentage : payeur en dernière clé pour recevoir le surplus d'arrondi (§6.3.2).
+        $ordered = $this->reorderPayerLast($normalized, $payeur->getId());
+
+        return [$this->splitCalculator->calculatePercentages($montant, $ordered), $ordered];
+    }
+
+    /**
+     * @param  array<int, string> $normalized
+     * @return array<int, string>
+     */
+    private function reorderPayerLast(array $normalized, int $payeurId): array
+    {
+        if (!array_key_exists($payeurId, $normalized)) {
+            return $normalized;
+        }
+
+        $payeurPart = $normalized[$payeurId];
+        unset($normalized[$payeurId]);
+        $normalized[$payeurId] = $payeurPart;
+
+        return $normalized;
     }
 
     /**
@@ -145,17 +164,27 @@ final class ExpenseService
     private function normalizeParts(array $rawParts, array $beneficiaireIds): array
     {
         $normalized = [];
+        // Accepte uniquement un entier ou une chaîne décimale avec 1 ou 2 décimales,
+        // pour éviter la notation scientifique ("1e2") et les conversions float floues.
+        $decimalPattern = '/^\d+(\.\d{1,2})?$/';
         foreach ($rawParts as $userId => $value) {
             $intUserId = (int) $userId;
             if ($intUserId <= 0) {
                 throw new UnprocessableEntityHttpException('Les identifiants de parts doivent être des entiers positifs.');
             }
-            if (!is_numeric($value)) {
+            if (!is_string($value) && !is_int($value)) {
                 throw new UnprocessableEntityHttpException(
-                    sprintf('La valeur de la part du bénéficiaire %d doit être numérique.', $intUserId)
+                    sprintf('La valeur de la part du bénéficiaire %d doit être un nombre décimal.', $intUserId)
                 );
             }
-            $normalized[$intUserId] = number_format((float) $value, 2, '.', '');
+            $stringValue = is_int($value) ? (string) $value : trim($value);
+            if (!preg_match($decimalPattern, $stringValue)) {
+                throw new UnprocessableEntityHttpException(
+                    sprintf('La valeur "%s" du bénéficiaire %d doit être un décimal positif avec 2 décimales max.', $stringValue, $intUserId)
+                );
+            }
+            // bcadd avec scale=2 normalise la chaîne sans float (ex: "5" -> "5.00").
+            $normalized[$intUserId] = bcadd($stringValue, '0', 2);
         }
 
         sort($beneficiaireIds);
