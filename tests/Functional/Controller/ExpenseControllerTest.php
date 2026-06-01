@@ -307,6 +307,130 @@ final class ExpenseControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(403);
     }
 
+    public function testCreateExpenseCustomMode(): void
+    {
+        $emailA = 'cm_a_' . uniqid() . '@test.com';
+        $emailB = 'cm_b_' . uniqid() . '@test.com';
+
+        $tokenA = $this->createUserAndGetToken($emailA);
+        $tokenB = $this->createUserAndGetToken($emailB);
+
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+            'description' => 'Repas custom',
+            'montant' => 30.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userAId, $userBId],
+            'mode' => 'personnalisee',
+            'parts' => [
+                (string) $userAId => '20.00',
+                (string) $userBId => '10.00',
+            ],
+        ], $tokenA);
+
+        self::assertResponseStatusCodeSame(201);
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertSame('personnalisee', $body['type_repartition']);
+        $byId = [];
+        foreach ($body['beneficiaires'] as $b) {
+            $byId[$b['id']] = $b['montant_part'];
+        }
+        self::assertSame('20.00', $byId[$userAId]);
+        self::assertSame('10.00', $byId[$userBId]);
+    }
+
+    public function testCreateExpenseCustomModeWithMismatchReturns422(): void
+    {
+        $token = $this->createUserAndGetToken('cm_mis_' . uniqid() . '@test.com');
+        $groupId = $this->createGroup($token);
+        $userId = $this->getCurrentUserId($token);
+
+        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+            'description' => 'Bad custom',
+            'montant' => 30.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userId],
+            'mode' => 'personnalisee',
+            'parts' => [(string) $userId => '25.00'],
+        ], $token);
+
+        self::assertResponseStatusCodeSame(422);
+    }
+
+    public function testCreateExpensePercentageMode(): void
+    {
+        $emailA = 'pct_a_' . uniqid() . '@test.com';
+        $emailB = 'pct_b_' . uniqid() . '@test.com';
+
+        $tokenA = $this->createUserAndGetToken($emailA);
+        $tokenB = $this->createUserAndGetToken($emailB);
+
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+            'description' => 'Repas pct',
+            'montant' => 100.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userAId, $userBId],
+            'mode' => 'pourcentage',
+            'parts' => [
+                (string) $userAId => '60.00',
+                (string) $userBId => '40.00',
+            ],
+        ], $tokenA);
+
+        self::assertResponseStatusCodeSame(201);
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertSame('pourcentage', $body['type_repartition']);
+
+        $byId = [];
+        foreach ($body['beneficiaires'] as $b) {
+            $byId[$b['id']] = $b;
+        }
+        self::assertSame('60.00', $byId[$userAId]['montant_part']);
+        self::assertSame('40.00', $byId[$userBId]['montant_part']);
+        self::assertSame('60.00', $byId[$userAId]['pourcentage']);
+        self::assertSame('40.00', $byId[$userBId]['pourcentage']);
+    }
+
+    public function testCreateExpensePercentageSumNot100Returns422(): void
+    {
+        $emailA = 'pct_bad_' . uniqid() . '@test.com';
+        $emailB = 'pct_bad2_' . uniqid() . '@test.com';
+
+        $tokenA = $this->createUserAndGetToken($emailA);
+        $tokenB = $this->createUserAndGetToken($emailB);
+
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+            'description' => 'Bad pct',
+            'montant' => 100.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userAId, $userBId],
+            'mode' => 'pourcentage',
+            'parts' => [
+                (string) $userAId => '60.00',
+                (string) $userBId => '30.00',
+            ],
+        ], $tokenA);
+
+        self::assertResponseStatusCodeSame(422);
+    }
+
     public function testCreateExpenseUsesDateDepenseWhenProvided(): void
     {
         $token = $this->createUserAndGetToken('date_' . uniqid() . '@test.com');

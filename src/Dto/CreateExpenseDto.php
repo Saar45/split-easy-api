@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use App\Enum\TypeRepartition;
 use Symfony\Component\Validator\Constraints as Assert;
 
 final class CreateExpenseDto
@@ -33,6 +34,24 @@ final class CreateExpenseDto
             new Assert\Positive(message: 'Chaque identifiant de bénéficiaire doit être positif.'),
         ])]
         public readonly ?array $beneficiaire_ids = null,
+
+        #[Assert\Choice(
+            choices: ['equitable', 'personnalisee', 'pourcentage'],
+            message: 'Le mode de répartition doit être equitable, personnalisee ou pourcentage.'
+        )]
+        public readonly string $mode = 'equitable',
+
+        /**
+         * Pour mode personnalisee : map { user_id: montant_exact_string }.
+         * Pour mode pourcentage : map { user_id: pourcentage_string }.
+         * Ignoré en mode equitable.
+         */
+        public readonly ?array $parts = null,
     ) {
+    }
+
+    public function getTypeRepartition(): TypeRepartition
+    {
+        return TypeRepartition::from($this->mode);
     }
 }

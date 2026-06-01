@@ -6,6 +6,7 @@ namespace App\Tests\Unit\Service;
 
 use App\Service\SplitCalculatorService;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 final class SplitCalculatorServiceTest extends TestCase
 {
@@ -91,6 +92,76 @@ final class SplitCalculatorServiceTest extends TestCase
         self::assertSame('3.33', $result[1]);
         self::assertSame('3.33', $result[2]);
         self::assertSame('3.34', $result[99]);
+    }
+
+    public function testCustomSplitValid(): void
+    {
+        $result = $this->service->calculateCustom('30.00', [1 => '10.00', 2 => '5.00', 3 => '15.00']);
+
+        self::assertSame('10.00', $result[1]);
+        self::assertSame('5.00', $result[2]);
+        self::assertSame('15.00', $result[3]);
+        self::assertSame('30.00', $this->sumParts($result));
+    }
+
+    public function testCustomSplitWithSumMismatchThrows(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service->calculateCustom('30.00', [1 => '10.00', 2 => '5.00', 3 => '10.00']);
+    }
+
+    public function testCustomSplitWithZeroAmountThrows(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service->calculateCustom('10.00', [1 => '10.00', 2 => '0.00']);
+    }
+
+    public function testCustomSplitWithNegativeAmountThrows(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service->calculateCustom('10.00', [1 => '15.00', 2 => '-5.00']);
+    }
+
+    public function testCustomSplitEmptyThrows(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service->calculateCustom('10.00', []);
+    }
+
+    public function testPercentageSplitValid(): void
+    {
+        $result = $this->service->calculatePercentages('100.00', [1 => '50.00', 2 => '30.00', 3 => '20.00']);
+
+        self::assertSame('50.00', $result[1]);
+        self::assertSame('30.00', $result[2]);
+        self::assertSame('20.00', $result[3]);
+        self::assertSame('100.00', $this->sumParts($result));
+    }
+
+    public function testPercentageSplitWithRoundingSurplusGoesToLast(): void
+    {
+        // 10 * 33.33% = 3.333 chacun ; arrondi -> 3.33 + 3.33 + 3.34
+        $result = $this->service->calculatePercentages('10.00', [1 => '33.33', 2 => '33.33', 3 => '33.34']);
+
+        self::assertSame('10.00', $this->sumParts($result));
+    }
+
+    public function testPercentageSplitWithSumNotEqual100Throws(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service->calculatePercentages('100.00', [1 => '50.00', 2 => '40.00']);
+    }
+
+    public function testPercentageSplitWithZeroThrows(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service->calculatePercentages('100.00', [1 => '0.00', 2 => '100.00']);
+    }
+
+    public function testPercentageSplitEmptyThrows(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service->calculatePercentages('100.00', []);
     }
 
     /** @param array<int, string> $parts */
