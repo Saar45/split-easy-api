@@ -54,6 +54,7 @@ final class ExpenseService
             }
         }
 
+        $type = $dto->getTypeRepartition();
         $dateDepense = $dto->date_depense !== null
             ? new \DateTimeImmutable($dto->date_depense)
             : new \DateTimeImmutable();
@@ -67,17 +68,12 @@ final class ExpenseService
             ->setCategorie($categorie)
             ->setPayeur($payeur)
             ->setGroupe($groupe)
-            ->setTypeRepartition(TypeRepartition::Equitable);
+            ->setTypeRepartition($type);
 
         $this->em->persist($depense);
 
-        // Payeur en dernier pour lui attribuer le surplus d'arrondi (§6.3.2).
-        $benefIds = array_values(array_filter($dto->beneficiaire_ids, fn (int $id) => $id !== $payeur->getId()));
-        if (in_array($payeur->getId(), $dto->beneficiaire_ids, true)) {
-            $benefIds[] = $payeur->getId();
-        }
-
-        $parts = $this->splitCalculator->calculateEqual($montantString, $benefIds);
+        // Calcule les parts selon le mode et conserve les pourcentages éventuels.
+        [$parts, $pourcentages] = $this->computeParts($type, $montantString, $payeur, $dto);
 
         // Batch load des bénéficiaires pour éviter N+1.
         $beneficiaires = $this->utilisateurRepository->findBy(['id' => array_keys($parts)]);
@@ -96,12 +92,83 @@ final class ExpenseService
                 ->setDepense($depense)
                 ->setMontantPart($montantPart);
 
+            if (isset($pourcentages[$userId])) {
+                $repartir->setPourcentage($pourcentages[$userId]);
+            }
+
             $this->em->persist($repartir);
         }
 
         $this->em->flush();
 
         return $depense;
+    }
+
+    /**
+     * @return array{0: array<int, string>, 1: array<int, string>}
+     */
+    private function computeParts(TypeRepartition $type, string $montant, Utilisateur $payeur, CreateExpenseDto $dto): array
+    {
+        $beneficiaireIds = $dto->beneficiaire_ids ?? [];
+
+        if ($type === TypeRepartition::Equitable) {
+            // Payeur en dernier pour lui attribuer le surplus d'arrondi (§6.3.2).
+            $benefIds = array_values(array_filter($beneficiaireIds, fn (int $id) => $id !== $payeur->getId()));
+            if (in_array($payeur->getId(), $beneficiaireIds, true)) {
+                $benefIds[] = $payeur->getId();
+            }
+
+            return [$this->splitCalculator->calculateEqual($montant, $benefIds), []];
+        }
+
+        if ($dto->parts === null || count($dto->parts) === 0) {
+            throw new UnprocessableEntityHttpException('Le champ parts est obligatoire pour ce mode de répartition.');
+        }
+
+        $normalized = $this->normalizeParts($dto->parts, $beneficiaireIds);
+
+        if ($type === TypeRepartition::Personnalisee) {
+            return [$this->splitCalculator->calculateCustom($montant, $normalized), []];
+        }
+
+        // Pourcentage : on calcule les montants et on conserve les pourcentages.
+        return [$this->splitCalculator->calculatePercentages($montant, $normalized), $normalized];
+    }
+
+    /**
+     * Valide et normalise le map { user_id: valeur } en s'assurant qu'il couvre exactement la liste des bénéficiaires.
+     *
+     * @param array<int|string, mixed> $rawParts
+     * @param int[]                    $beneficiaireIds
+     * @return array<int, string>
+     */
+    private function normalizeParts(array $rawParts, array $beneficiaireIds): array
+    {
+        $normalized = [];
+        foreach ($rawParts as $userId => $value) {
+            $intUserId = (int) $userId;
+            if ($intUserId <= 0) {
+                throw new UnprocessableEntityHttpException('Les identifiants de parts doivent être des entiers positifs.');
+            }
+            if (!is_numeric($value)) {
+                throw new UnprocessableEntityHttpException(
+                    sprintf('La valeur de la part du bénéficiaire %d doit être numérique.', $intUserId)
+                );
+            }
+            $normalized[$intUserId] = number_format((float) $value, 2, '.', '');
+        }
+
+        sort($beneficiaireIds);
+        $partKeys = array_keys($normalized);
+        sort($partKeys);
+
+        if ($partKeys !== $beneficiaireIds) {
+            throw new UnprocessableEntityHttpException(
+                'Les parts doivent couvrir exactement la liste des bénéficiaires.'
+            );
+        }
+
+        return $normalized;
     }
 
     /** @return Depense[] */
