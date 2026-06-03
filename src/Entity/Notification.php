@@ -9,9 +9,10 @@ use App\Repository\NotificationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Référence polymorphe : reference_type + reference_id pointent vers Depense, Groupe ou Remboursement
- * selon le contexte. Aucune FK n'est posée sur reference_id — l'intégrité référentielle est
- * garantie par la couche Service (voir NotificationService).
+ * Référence polymorphe : reference_type + reference_id pointent vers Depense, Groupe,
+ * Remboursement ou Appartenir selon le contexte. Aucune FK n'est posée sur reference_id —
+ * l'intégrité référentielle est garantie par la couche Service (voir NotificationService).
+ * Point de défense jury n°3 (§6.6.2 du dossier).
  */
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
 #[ORM\Table(name: 'notification')]
@@ -28,7 +29,10 @@ class Notification
     #[ORM\Column(name: 'type_notification', type: 'string', length: 75, enumType: TypeNotification::class)]
     private TypeNotification $typeNotification;
 
-    #[ORM\Column(name: 'message', type: 'string', length: 255)]
+    #[ORM\Column(name: 'titre', type: 'string', length: 150)]
+    private string $titre;
+
+    #[ORM\Column(name: 'message', type: 'text')]
     private string $message;
 
     #[ORM\Column(name: 'est_lu', type: 'boolean', options: ['default' => false])]
@@ -59,6 +63,9 @@ class Notification
 
     public function getTypeNotification(): TypeNotification { return $this->typeNotification; }
     public function setTypeNotification(TypeNotification $type): self { $this->typeNotification = $type; return $this; }
+
+    public function getTitre(): string { return $this->titre; }
+    public function setTitre(string $titre): self { $this->titre = $titre; return $this; }
 
     public function getMessage(): string { return $this->message; }
     public function setMessage(string $message): self { $this->message = $message; return $this; }
