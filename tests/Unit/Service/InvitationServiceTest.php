@@ -12,6 +12,7 @@ use App\Enum\StatutInvitation;
 use App\Repository\AppartenirRepository;
 use App\Repository\UtilisateurRepository;
 use App\Service\InvitationService;
+use App\Service\NotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -272,6 +273,8 @@ final class InvitationServiceTest extends TestCase
         $userRepo = $this->createMock(UtilisateurRepository::class);
         $userRepo->method('findOneBy')->willReturn($findUserByEmail);
 
-        return new InvitationService($em, $appartenirRepo, $userRepo);
+        $notifications = $this->createMock(NotificationService::class);
+
+        return new InvitationService($em, $appartenirRepo, $userRepo, $notifications);
     }
 }

@@ -10,6 +10,7 @@ use App\Entity\Remboursement;
 use App\Entity\Utilisateur;
 use App\Enum\StatutInvitation;
 use App\Enum\StatutRemboursement;
+use App\Enum\TypeNotification;
 use App\Repository\AppartenirRepository;
 use App\Repository\RemboursementRepository;
 use App\Repository\UtilisateurRepository;
@@ -37,6 +38,7 @@ final class ReimbursementService
         private readonly RemboursementRepository $remboursementRepository,
         private readonly AppartenirRepository $appartenirRepository,
         private readonly UtilisateurRepository $utilisateurRepository,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -75,6 +77,15 @@ final class ReimbursementService
         $this->em->persist($rb);
         $this->em->flush();
 
+        $this->notifications->create(
+            $crediteur,
+            TypeNotification::RemboursementPropose,
+            'Remboursement proposé',
+            sprintf('%s %s vous propose un remboursement de %s €.', $debiteur->getPrenom(), $debiteur->getNom(), $montant),
+            'remboursement',
+            $rb->getId(),
+        );
+
         return $rb;
     }
 
@@ -85,6 +96,15 @@ final class ReimbursementService
         $rb->setStatut(StatutRemboursement::Valide);
         $rb->setDateValidation(new \DateTimeImmutable());
         $this->em->flush();
+
+        $this->notifications->create(
+            $rb->getDebiteur(),
+            TypeNotification::RemboursementAccepte,
+            'Remboursement accepté',
+            sprintf('%s %s a accepté votre remboursement de %s €.', $rb->getCrediteur()->getPrenom(), $rb->getCrediteur()->getNom(), $rb->getMontant()),
+            'remboursement',
+            $rb->getId(),
+        );
 
         return $rb;
     }
@@ -98,6 +118,15 @@ final class ReimbursementService
         $rb->setStatut(StatutRemboursement::Conteste);
         $this->em->flush();
 
+        $this->notifications->create(
+            $rb->getDebiteur(),
+            TypeNotification::RemboursementRejete,
+            'Remboursement contesté',
+            sprintf('%s %s a contesté votre remboursement de %s €.', $rb->getCrediteur()->getPrenom(), $rb->getCrediteur()->getNom(), $rb->getMontant()),
+            'remboursement',
+            $rb->getId(),
+        );
+
         return $rb;
     }
 
@@ -107,6 +136,15 @@ final class ReimbursementService
 
         $rb->setStatut(StatutRemboursement::Annule);
         $this->em->flush();
+
+        $this->notifications->create(
+            $rb->getCrediteur(),
+            TypeNotification::RemboursementAnnule,
+            'Remboursement annulé',
+            sprintf('%s %s a annulé sa proposition de remboursement de %s €.', $rb->getDebiteur()->getPrenom(), $rb->getDebiteur()->getNom(), $rb->getMontant()),
+            'remboursement',
+            $rb->getId(),
+        );
 
         return $rb;
     }

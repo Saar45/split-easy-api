@@ -11,6 +11,7 @@ use App\Entity\Groupe;
 use App\Entity\Repartir;
 use App\Entity\Utilisateur;
 use App\Enum\StatutInvitation;
+use App\Enum\TypeNotification;
 use App\Enum\TypeRepartition;
 use App\Repository\AppartenirRepository;
 use App\Repository\CategorieRepository;
@@ -30,6 +31,7 @@ final class ExpenseService
         private readonly CategorieRepository $categorieRepository,
         private readonly UtilisateurRepository $utilisateurRepository,
         private readonly SplitCalculatorService $splitCalculator,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -101,7 +103,34 @@ final class ExpenseService
 
         $this->em->flush();
 
+        $this->notifyGroupMembers($groupe, $payeur, $depense->getId(), $dto->description, $montantString);
+
         return $depense;
+    }
+
+    private function notifyGroupMembers(Groupe $groupe, Utilisateur $payeur, ?int $depenseId, string $description, string $montant): void
+    {
+        if ($depenseId === null) {
+            return;
+        }
+
+        $acceptedIds = $this->getAcceptedMemberIds($groupe);
+        $otherIds = array_values(array_filter($acceptedIds, fn (int $id) => $id !== $payeur->getId()));
+        if ($otherIds === []) {
+            return;
+        }
+
+        $others = $this->utilisateurRepository->findBy(['id' => $otherIds]);
+        foreach ($others as $member) {
+            $this->notifications->create(
+                $member,
+                TypeNotification::DepenseAjoutee,
+                'Nouvelle dépense',
+                sprintf('%s %s a ajouté « %s » (%s €) dans le groupe « %s ».', $payeur->getPrenom(), $payeur->getNom(), $description, $montant, $groupe->getNom()),
+                'depense',
+                $depenseId,
+            );
+        }
     }
 
     /**

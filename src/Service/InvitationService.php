@@ -9,6 +9,7 @@ use App\Entity\Groupe;
 use App\Entity\Utilisateur;
 use App\Enum\RoleAppartenir;
 use App\Enum\StatutInvitation;
+use App\Enum\TypeNotification;
 use App\Repository\AppartenirRepository;
 use App\Repository\UtilisateurRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +38,7 @@ final class InvitationService
         private readonly EntityManagerInterface $em,
         private readonly AppartenirRepository $appartenirRepository,
         private readonly UtilisateurRepository $utilisateurRepository,
+        private readonly NotificationService $notifications,
     ) {
     }
 
@@ -83,6 +85,15 @@ final class InvitationService
         $this->em->persist($appartenir);
         $this->em->flush();
 
+        $this->notifications->create(
+            $invite,
+            TypeNotification::InvitationRecue,
+            'Nouvelle invitation',
+            sprintf('%s %s vous invite à rejoindre le groupe « %s ».', $inviter->getPrenom(), $inviter->getNom(), $groupe->getNom()),
+            'appartenir',
+            $groupe->getId(),
+        );
+
         return $appartenir;
     }
 
@@ -100,6 +111,18 @@ final class InvitationService
             ->setDateAdhesion($now);
         $this->em->flush();
 
+        $inviter = $this->findGroupCreator($appartenir->getGroupe());
+        if ($inviter !== null && $inviter->getId() !== $currentUser->getId()) {
+            $this->notifications->create(
+                $inviter,
+                TypeNotification::InvitationAcceptee,
+                'Invitation acceptée',
+                sprintf('%s %s a rejoint le groupe « %s ».', $currentUser->getPrenom(), $currentUser->getNom(), $appartenir->getGroupe()->getNom()),
+                'appartenir',
+                $appartenir->getGroupe()->getId(),
+            );
+        }
+
         return $appartenir;
     }
 
@@ -113,7 +136,29 @@ final class InvitationService
         $appartenir->setStatutInvitation(StatutInvitation::Refusee);
         $this->em->flush();
 
+        $inviter = $this->findGroupCreator($appartenir->getGroupe());
+        if ($inviter !== null && $inviter->getId() !== $currentUser->getId()) {
+            $this->notifications->create(
+                $inviter,
+                TypeNotification::InvitationRefusee,
+                'Invitation refusée',
+                sprintf('%s %s a refusé l\'invitation au groupe « %s ».', $currentUser->getPrenom(), $currentUser->getNom(), $appartenir->getGroupe()->getNom()),
+                'appartenir',
+                $appartenir->getGroupe()->getId(),
+            );
+        }
+
         return $appartenir;
+    }
+
+    private function findGroupCreator(Groupe $groupe): ?Utilisateur
+    {
+        $creatorRow = $this->appartenirRepository->findOneBy([
+            'groupe' => $groupe,
+            'role' => RoleAppartenir::Createur,
+        ]);
+
+        return $creatorRow?->getUtilisateur();
     }
 
     /** @return Appartenir[] */
