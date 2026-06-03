@@ -46,6 +46,9 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'date_token_reinitialisation', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateTokenReinitialisation = null;
 
+    #[ORM\OneToOne(mappedBy: 'utilisateur', targetEntity: PreferencesUtilisateur::class, cascade: ['persist', 'remove'])]
+    private ?PreferencesUtilisateur $preferences = null;
+
     public function __construct()
     {
         $this->dateInscription = new \DateTimeImmutable();
@@ -90,4 +93,7 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string { return $this->email; }
 
     public function eraseCredentials(): void {}
+
+    public function getPreferences(): ?PreferencesUtilisateur { return $this->preferences; }
+    public function setPreferences(?PreferencesUtilisateur $preferences): self { $this->preferences = $preferences; return $this; }
 }
