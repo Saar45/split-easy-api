@@ -6,6 +6,7 @@ namespace App\Repository;
 
 use App\Entity\Depense;
 use App\Entity\Groupe;
+use App\Entity\Utilisateur;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -43,5 +44,90 @@ class DepenseRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Somme par catégorie des dépenses où l'utilisateur est payeur, restreintes
+     * aux groupes donnés et à la fenêtre [start, end] inclusive.
+     *
+     * @param  Groupe[] $groupes
+     * @return list<array{categorie_id: int, libelle: string, couleur: ?string, montant: string}>
+     */
+    public function sumByCategoryForPayer(
+        Utilisateur $payeur,
+        array $groupes,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+    ): array {
+        if (count($groupes) === 0) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('d')
+            ->select('c.id AS categorie_id', 'c.libelle AS libelle', 'c.couleur AS couleur', 'SUM(d.montant) AS montant')
+            ->innerJoin('d.categorie', 'c')
+            ->where('d.payeur = :payeur')
+            ->andWhere('d.groupe IN (:groupes)')
+            ->andWhere('d.dateDepense >= :start')
+            ->andWhere('d.dateDepense <= :end')
+            ->setParameter('payeur', $payeur)
+            ->setParameter('groupes', $groupes)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->groupBy('c.id', 'c.libelle', 'c.couleur')
+            ->orderBy('montant', 'DESC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static function (array $r): array {
+            return [
+                'categorie_id' => (int) $r['categorie_id'],
+                'libelle' => (string) $r['libelle'],
+                'couleur' => $r['couleur'] !== null ? (string) $r['couleur'] : null,
+                'montant' => $r['montant'] !== null ? (string) $r['montant'] : '0.00',
+            ];
+        }, $rows);
+    }
+
+    /**
+     * Renvoie (date, montant) pour chaque dépense où l'utilisateur est payeur dans
+     * les groupes donnés et la fenêtre [start, end]. L'agrégation par jour/mois est
+     * faite dans le Service, en PHP, pour rester portable entre SGBD.
+     *
+     * @param  Groupe[] $groupes
+     * @return list<array{date: \DateTimeInterface, montant: string}>
+     */
+    public function findRawAmountsForPayer(
+        Utilisateur $payeur,
+        array $groupes,
+        \DateTimeInterface $start,
+        \DateTimeInterface $end,
+    ): array {
+        if (count($groupes) === 0) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('d')
+            ->select('d.dateDepense AS date', 'd.montant AS montant')
+            ->where('d.payeur = :payeur')
+            ->andWhere('d.groupe IN (:groupes)')
+            ->andWhere('d.dateDepense >= :start')
+            ->andWhere('d.dateDepense <= :end')
+            ->setParameter('payeur', $payeur)
+            ->setParameter('groupes', $groupes)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_map(static function (array $r): array {
+            /** @var \DateTimeInterface $date */
+            $date = $r['date'];
+
+            return [
+                'date' => $date,
+                'montant' => (string) $r['montant'],
+            ];
+        }, $rows);
     }
 }
