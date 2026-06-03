@@ -88,8 +88,25 @@ docker compose exec app php bin/phpunit
 
 ## Comptes de test
 
-À compléter dès que les fixtures utilisateurs seront en place.
+Voir `src/DataFixtures/` après `doctrine:fixtures:load`. Le formateur peut se connecter immédiatement avec les comptes seedés (typiquement `alice@test.com` / `SecurePass1` et `bob@test.com` / `SecurePass1` selon les fixtures actives).
 
-## Statut Jalon 5
+## Fonctionnalités livrées (v1.0.0)
 
-Squelette + base de données initialisés. Prochaines étapes : authentification F1, gestion des groupes F2.
+| Code | Périmètre |
+|------|-----------|
+| F1   | Authentification JWT + refresh single-use + CGU RGPD |
+| F2   | Gestion des groupes (CRUD + rôles créateur/membre) |
+| F3   | CRUD dépenses avec catégories |
+| F4   | Répartition 3 modes : équitable, personnalisée, pourcentage |
+| F5   | Algorithme greedy de réduction des dettes (jury n°1) |
+| F6   | Validation bipartite remboursements — machine à 5 états (jury n°2) |
+| F7   | Invitations par lien unique (token 7j) |
+| F8   | Statistiques agrégées par catégorie / membre / période |
+| F9   | Notifications in-app avec référence polymorphe (jury n°3) |
+| RGPD | `GET /api/users/me/data` + `DELETE /api/users/me` |
+
+Détails par feature : `docs/features/`. Bilan Jalon 5 : `docs/jalon5-summary.md`.
+
+## Statut
+
+v1.0.0 feature-complete et conforme au dossier v3.0.
