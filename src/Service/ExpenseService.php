@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Dto\CreateExpenseDto;
-use App\Entity\Categorie;
 use App\Entity\Depense;
 use App\Entity\Groupe;
 use App\Entity\Repartir;
@@ -37,12 +36,12 @@ final class ExpenseService
 
     public function createExpenseForGroup(Groupe $groupe, Utilisateur $payeur, CreateExpenseDto $dto): Depense
     {
-        if ($dto->id_categorie === null || $dto->montant === null || $dto->beneficiaire_ids === null) {
+        if (null === $dto->id_categorie || null === $dto->montant || null === $dto->beneficiaire_ids) {
             throw new UnprocessableEntityHttpException('Champs obligatoires manquants.');
         }
 
         $categorie = $this->categorieRepository->find($dto->id_categorie);
-        if ($categorie === null) {
+        if (null === $categorie) {
             throw new UnprocessableEntityHttpException(sprintf('Catégorie %d introuvable.', $dto->id_categorie));
         }
 
@@ -50,14 +49,12 @@ final class ExpenseService
 
         foreach ($dto->beneficiaire_ids as $benefId) {
             if (!in_array($benefId, $acceptedMemberIds, true)) {
-                throw new UnprocessableEntityHttpException(
-                    sprintf('L\'utilisateur %d n\'est pas membre accepté du groupe.', $benefId)
-                );
+                throw new UnprocessableEntityHttpException(sprintf('L\'utilisateur %d n\'est pas membre accepté du groupe.', $benefId));
             }
         }
 
         $type = $dto->getTypeRepartition();
-        $dateDepense = $dto->date_depense !== null
+        $dateDepense = null !== $dto->date_depense
             ? new \DateTimeImmutable($dto->date_depense)
             : new \DateTimeImmutable();
 
@@ -110,13 +107,13 @@ final class ExpenseService
 
     private function notifyGroupMembers(Groupe $groupe, Utilisateur $payeur, ?int $depenseId, string $description, string $montant): void
     {
-        if ($depenseId === null) {
+        if (null === $depenseId) {
             return;
         }
 
         $acceptedIds = $this->getAcceptedMemberIds($groupe);
         $otherIds = array_values(array_filter($acceptedIds, fn (int $id) => $id !== $payeur->getId()));
-        if ($otherIds === []) {
+        if ([] === $otherIds) {
             return;
         }
 
@@ -140,7 +137,7 @@ final class ExpenseService
     {
         $beneficiaireIds = $dto->beneficiaire_ids ?? [];
 
-        if ($type === TypeRepartition::Equitable) {
+        if (TypeRepartition::Equitable === $type) {
             // Payeur en dernier pour lui attribuer le surplus d'arrondi (§6.3.2).
             $benefIds = array_values(array_filter($beneficiaireIds, fn (int $id) => $id !== $payeur->getId()));
             if (in_array($payeur->getId(), $beneficiaireIds, true)) {
@@ -150,13 +147,13 @@ final class ExpenseService
             return [$this->splitCalculator->calculateEqual($montant, $benefIds), []];
         }
 
-        if ($dto->parts === null || count($dto->parts) === 0) {
+        if (null === $dto->parts || 0 === count($dto->parts)) {
             throw new UnprocessableEntityHttpException('Le champ parts est obligatoire pour ce mode de répartition.');
         }
 
         $normalized = $this->normalizeParts($dto->parts, $beneficiaireIds);
 
-        if ($type === TypeRepartition::Personnalisee) {
+        if (TypeRepartition::Personnalisee === $type) {
             return [$this->splitCalculator->calculateCustom($montant, $normalized), []];
         }
 
@@ -167,7 +164,8 @@ final class ExpenseService
     }
 
     /**
-     * @param  array<int, string> $normalized
+     * @param array<int, string> $normalized
+     *
      * @return array<int, string>
      */
     private function reorderPayerLast(array $normalized, int $payeurId): array
@@ -188,6 +186,7 @@ final class ExpenseService
      *
      * @param array<int|string, mixed> $rawParts
      * @param int[]                    $beneficiaireIds
+     *
      * @return array<int, string>
      */
     private function normalizeParts(array $rawParts, array $beneficiaireIds): array
@@ -202,15 +201,11 @@ final class ExpenseService
                 throw new UnprocessableEntityHttpException('Les identifiants de parts doivent être des entiers positifs.');
             }
             if (!is_string($value) && !is_int($value)) {
-                throw new UnprocessableEntityHttpException(
-                    sprintf('La valeur de la part du bénéficiaire %d doit être un nombre décimal.', $intUserId)
-                );
+                throw new UnprocessableEntityHttpException(sprintf('La valeur de la part du bénéficiaire %d doit être un nombre décimal.', $intUserId));
             }
             $stringValue = is_int($value) ? (string) $value : trim($value);
             if (!preg_match($decimalPattern, $stringValue)) {
-                throw new UnprocessableEntityHttpException(
-                    sprintf('La valeur "%s" du bénéficiaire %d doit être un décimal positif avec 2 décimales max.', $stringValue, $intUserId)
-                );
+                throw new UnprocessableEntityHttpException(sprintf('La valeur "%s" du bénéficiaire %d doit être un décimal positif avec 2 décimales max.', $stringValue, $intUserId));
             }
             // bcadd avec scale=2 normalise la chaîne sans float (ex: "5" -> "5.00").
             $normalized[$intUserId] = bcadd($stringValue, '0', 2);
@@ -221,9 +216,7 @@ final class ExpenseService
         sort($partKeys);
 
         if ($partKeys !== $beneficiaireIds) {
-            throw new UnprocessableEntityHttpException(
-                'Les parts doivent couvrir exactement la liste des bénéficiaires.'
-            );
+            throw new UnprocessableEntityHttpException('Les parts doivent couvrir exactement la liste des bénéficiaires.');
         }
 
         return $normalized;

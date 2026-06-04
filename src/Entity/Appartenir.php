@@ -63,29 +63,104 @@ class Appartenir
         $this->dateInvitation = new \DateTimeImmutable();
     }
 
-    public function getUtilisateur(): Utilisateur { return $this->utilisateur; }
-    public function setUtilisateur(Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
+    public function getUtilisateur(): Utilisateur
+    {
+        return $this->utilisateur;
+    }
 
-    public function getGroupe(): Groupe { return $this->groupe; }
-    public function setGroupe(Groupe $groupe): self { $this->groupe = $groupe; return $this; }
+    public function setUtilisateur(Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
 
-    public function getDateAdhesion(): ?\DateTimeInterface { return $this->dateAdhesion; }
-    public function setDateAdhesion(?\DateTimeInterface $date): self { $this->dateAdhesion = $date; return $this; }
+        return $this;
+    }
 
-    public function getStatutInvitation(): StatutInvitation { return $this->statutInvitation; }
-    public function setStatutInvitation(StatutInvitation $statut): self { $this->statutInvitation = $statut; return $this; }
+    public function getGroupe(): Groupe
+    {
+        return $this->groupe;
+    }
 
-    public function getTokenInvitation(): string { return $this->tokenInvitation; }
-    public function setTokenInvitation(string $token): self { $this->tokenInvitation = $token; return $this; }
+    public function setGroupe(Groupe $groupe): self
+    {
+        $this->groupe = $groupe;
 
-    public function getDateInvitation(): \DateTimeInterface { return $this->dateInvitation; }
+        return $this;
+    }
 
-    public function getRole(): RoleAppartenir { return $this->role; }
-    public function setRole(RoleAppartenir $role): self { $this->role = $role; return $this; }
+    public function getDateAdhesion(): ?\DateTimeInterface
+    {
+        return $this->dateAdhesion;
+    }
 
-    public function getDateExpiration(): ?\DateTimeInterface { return $this->dateExpiration; }
-    public function setDateExpiration(?\DateTimeInterface $date): self { $this->dateExpiration = $date; return $this; }
+    public function setDateAdhesion(?\DateTimeInterface $date): self
+    {
+        $this->dateAdhesion = $date;
 
-    public function getDateAcceptation(): ?\DateTimeInterface { return $this->dateAcceptation; }
-    public function setDateAcceptation(?\DateTimeInterface $date): self { $this->dateAcceptation = $date; return $this; }
+        return $this;
+    }
+
+    public function getStatutInvitation(): StatutInvitation
+    {
+        return $this->statutInvitation;
+    }
+
+    public function setStatutInvitation(StatutInvitation $statut): self
+    {
+        $this->statutInvitation = $statut;
+
+        return $this;
+    }
+
+    public function getTokenInvitation(): string
+    {
+        return $this->tokenInvitation;
+    }
+
+    public function setTokenInvitation(string $token): self
+    {
+        $this->tokenInvitation = $token;
+
+        return $this;
+    }
+
+    public function getDateInvitation(): \DateTimeInterface
+    {
+        return $this->dateInvitation;
+    }
+
+    public function getRole(): RoleAppartenir
+    {
+        return $this->role;
+    }
+
+    public function setRole(RoleAppartenir $role): self
+    {
+        $this->role = $role;
+
+        return $this;
+    }
+
+    public function getDateExpiration(): ?\DateTimeInterface
+    {
+        return $this->dateExpiration;
+    }
+
+    public function setDateExpiration(?\DateTimeInterface $date): self
+    {
+        $this->dateExpiration = $date;
+
+        return $this;
+    }
+
+    public function getDateAcceptation(): ?\DateTimeInterface
+    {
+        return $this->dateAcceptation;
+    }
+
+    public function setDateAcceptation(?\DateTimeInterface $date): self
+    {
+        $this->dateAcceptation = $date;
+
+        return $this;
+    }
 }

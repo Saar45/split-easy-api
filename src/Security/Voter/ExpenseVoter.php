@@ -20,7 +20,7 @@ final class ExpenseVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::VIEW && $subject instanceof Depense;
+        return self::VIEW === $attribute && $subject instanceof Depense;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool

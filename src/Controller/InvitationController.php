@@ -35,7 +35,7 @@ final class InvitationController extends AbstractController
         #[CurrentUser] Utilisateur $user,
     ): JsonResponse {
         $groupe = $this->em->getRepository(Groupe::class)->find($groupId);
-        if ($groupe === null) {
+        if (null === $groupe) {
             throw new NotFoundHttpException(sprintf('Groupe %d introuvable.', $groupId));
         }
 
@@ -80,7 +80,7 @@ final class InvitationController extends AbstractController
     public function members(int $groupId): JsonResponse
     {
         $groupe = $this->em->getRepository(Groupe::class)->find($groupId);
-        if ($groupe === null) {
+        if (null === $groupe) {
             throw new NotFoundHttpException(sprintf('Groupe %d introuvable.', $groupId));
         }
 
@@ -102,7 +102,7 @@ final class InvitationController extends AbstractController
     private function loadByToken(string $token): Appartenir
     {
         $appartenir = $this->em->getRepository(Appartenir::class)->findOneBy(['tokenInvitation' => $token]);
-        if ($appartenir === null) {
+        if (null === $appartenir) {
             throw new NotFoundHttpException('Invitation introuvable.');
         }
 

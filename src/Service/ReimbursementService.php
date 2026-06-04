@@ -44,7 +44,7 @@ final class ReimbursementService
 
     public function propose(Groupe $groupe, Utilisateur $debiteur, CreateRemboursementDto $dto): Remboursement
     {
-        if ($dto->id_crediteur === null || $dto->montant === null) {
+        if (null === $dto->id_crediteur || null === $dto->montant) {
             throw new UnprocessableEntityHttpException('Champs obligatoires manquants.');
         }
         if ($dto->id_crediteur === $debiteur->getId()) {
@@ -52,7 +52,7 @@ final class ReimbursementService
         }
 
         $crediteur = $this->utilisateurRepository->find($dto->id_crediteur);
-        if ($crediteur === null) {
+        if (null === $crediteur) {
             throw new UnprocessableEntityHttpException(sprintf('Créancier %d introuvable.', $dto->id_crediteur));
         }
 
@@ -163,12 +163,7 @@ final class ReimbursementService
     private function ensureCurrentStatus(Remboursement $rb, StatutRemboursement $expected, string $action): void
     {
         if ($rb->getStatut() !== $expected) {
-            throw new ConflictHttpException(sprintf(
-                'Impossible d\'%s un remboursement dans l\'état %s (attendu : %s).',
-                $action,
-                $rb->getStatut()->value,
-                $expected->value
-            ));
+            throw new ConflictHttpException(sprintf('Impossible d\'%s un remboursement dans l\'état %s (attendu : %s).', $action, $rb->getStatut()->value, $expected->value));
         }
     }
 

@@ -24,12 +24,13 @@ class DepenseRepository extends ServiceEntityRepository
      * Renvoie les N dépenses les plus récentes parmi les groupes donnés.
      * Eager-fetch groupe et payeur pour éviter les N+1 queries à la sérialisation.
      *
-     * @param  Groupe[] $groupes
+     * @param Groupe[] $groupes
+     *
      * @return Depense[]
      */
     public function findRecentForGroups(array $groupes, int $limit = 3): array
     {
-        if (count($groupes) === 0) {
+        if (0 === count($groupes)) {
             return [];
         }
 
@@ -50,7 +51,8 @@ class DepenseRepository extends ServiceEntityRepository
      * Somme par catégorie des dépenses où l'utilisateur est payeur, restreintes
      * aux groupes donnés et à la fenêtre [start, end] inclusive.
      *
-     * @param  Groupe[] $groupes
+     * @param Groupe[] $groupes
+     *
      * @return list<array{categorie_id: int, libelle: string, couleur: ?string, montant: string}>
      */
     public function sumByCategoryForPayer(
@@ -59,7 +61,7 @@ class DepenseRepository extends ServiceEntityRepository
         \DateTimeInterface $start,
         \DateTimeInterface $end,
     ): array {
-        if (count($groupes) === 0) {
+        if (0 === count($groupes)) {
             return [];
         }
 
@@ -83,8 +85,8 @@ class DepenseRepository extends ServiceEntityRepository
             return [
                 'categorie_id' => (int) $r['categorie_id'],
                 'libelle' => (string) $r['libelle'],
-                'couleur' => $r['couleur'] !== null ? (string) $r['couleur'] : null,
-                'montant' => $r['montant'] !== null ? (string) $r['montant'] : '0.00',
+                'couleur' => null !== $r['couleur'] ? (string) $r['couleur'] : null,
+                'montant' => null !== $r['montant'] ? (string) $r['montant'] : '0.00',
             ];
         }, $rows);
     }
@@ -94,7 +96,8 @@ class DepenseRepository extends ServiceEntityRepository
      * les groupes donnés et la fenêtre [start, end]. L'agrégation par jour/mois est
      * faite dans le Service, en PHP, pour rester portable entre SGBD.
      *
-     * @param  Groupe[] $groupes
+     * @param Groupe[] $groupes
+     *
      * @return list<array{date: \DateTimeInterface, montant: string}>
      */
     public function findRawAmountsForPayer(
@@ -103,7 +106,7 @@ class DepenseRepository extends ServiceEntityRepository
         \DateTimeInterface $start,
         \DateTimeInterface $end,
     ): array {
-        if (count($groupes) === 0) {
+        if (0 === count($groupes)) {
             return [];
         }
 

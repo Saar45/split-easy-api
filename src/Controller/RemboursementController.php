@@ -34,7 +34,7 @@ final class RemboursementController extends AbstractController
         #[CurrentUser] Utilisateur $user,
     ): JsonResponse {
         $groupe = $this->em->getRepository(Groupe::class)->find($groupId);
-        if ($groupe === null) {
+        if (null === $groupe) {
             return $this->json(['error' => sprintf('Groupe %d introuvable.', $groupId)], Response::HTTP_NOT_FOUND);
         }
 

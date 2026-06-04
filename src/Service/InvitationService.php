@@ -49,7 +49,7 @@ final class InvitationService
         }
 
         $invite = $this->utilisateurRepository->findOneBy(['email' => $email]);
-        if ($invite === null) {
+        if (null === $invite) {
             throw new UnprocessableEntityHttpException('L\'utilisateur doit avoir un compte.');
         }
 
@@ -61,12 +61,12 @@ final class InvitationService
             'groupe' => $groupe,
             'utilisateur' => $invite,
         ]);
-        if ($existing !== null) {
+        if (null !== $existing) {
             $statut = $existing->getStatutInvitation();
-            if ($statut === StatutInvitation::Acceptee) {
+            if (StatutInvitation::Acceptee === $statut) {
                 throw new ConflictHttpException('Cet utilisateur est déjà membre du groupe.');
             }
-            if ($statut === StatutInvitation::EnAttente && !$this->isExpired($existing)) {
+            if (StatutInvitation::EnAttente === $statut && !$this->isExpired($existing)) {
                 throw new ConflictHttpException('Une invitation est déjà en attente pour cet utilisateur.');
             }
             // refusee/expiree ou pending expirée : on remplace l'ancienne ligne.
@@ -80,7 +80,7 @@ final class InvitationService
             ->setRole(RoleAppartenir::Membre)
             ->setStatutInvitation(StatutInvitation::EnAttente)
             ->setTokenInvitation($this->generateToken())
-            ->setDateExpiration(new \DateTimeImmutable('+' . self::EXPIRATION_DAYS . ' days'));
+            ->setDateExpiration(new \DateTimeImmutable('+'.self::EXPIRATION_DAYS.' days'));
 
         $this->em->persist($appartenir);
         $this->em->flush();
@@ -112,7 +112,7 @@ final class InvitationService
         $this->em->flush();
 
         $inviter = $this->findGroupCreator($appartenir->getGroupe());
-        if ($inviter !== null && $inviter->getId() !== $currentUser->getId()) {
+        if (null !== $inviter && $inviter->getId() !== $currentUser->getId()) {
             $this->notifications->create(
                 $inviter,
                 TypeNotification::InvitationAcceptee,
@@ -137,7 +137,7 @@ final class InvitationService
         $this->em->flush();
 
         $inviter = $this->findGroupCreator($appartenir->getGroupe());
-        if ($inviter !== null && $inviter->getId() !== $currentUser->getId()) {
+        if (null !== $inviter && $inviter->getId() !== $currentUser->getId()) {
             $this->notifications->create(
                 $inviter,
                 TypeNotification::InvitationRefusee,
@@ -193,13 +193,13 @@ final class InvitationService
             'statutInvitation' => StatutInvitation::Acceptee,
         ]);
 
-        return $appartenir !== null && $appartenir->getRole() === RoleAppartenir::Createur;
+        return null !== $appartenir && RoleAppartenir::Createur === $appartenir->getRole();
     }
 
     private function findByTokenOrFail(string $token): Appartenir
     {
         $appartenir = $this->appartenirRepository->findOneBy(['tokenInvitation' => $token]);
-        if ($appartenir === null) {
+        if (null === $appartenir) {
             throw new NotFoundHttpException('Invitation introuvable.');
         }
 
@@ -208,11 +208,8 @@ final class InvitationService
 
     private function ensurePending(Appartenir $appartenir): void
     {
-        if ($appartenir->getStatutInvitation() !== StatutInvitation::EnAttente) {
-            throw new ConflictHttpException(sprintf(
-                'Cette invitation est déjà %s.',
-                $appartenir->getStatutInvitation()->value,
-            ));
+        if (StatutInvitation::EnAttente !== $appartenir->getStatutInvitation()) {
+            throw new ConflictHttpException(sprintf('Cette invitation est déjà %s.', $appartenir->getStatutInvitation()->value));
         }
     }
 
@@ -235,7 +232,7 @@ final class InvitationService
     private function isExpired(Appartenir $appartenir): bool
     {
         $exp = $appartenir->getDateExpiration();
-        if ($exp === null) {
+        if (null === $exp) {
             return false;
         }
 

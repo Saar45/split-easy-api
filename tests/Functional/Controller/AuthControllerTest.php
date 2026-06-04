@@ -18,7 +18,7 @@ final class AuthControllerTest extends WebTestCase
     {
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
     }
 
     public function testRegisterValidReturns201(): void
@@ -112,7 +112,7 @@ final class AuthControllerTest extends WebTestCase
         $token = $this->loginAndGetToken('me@test.com', 'SecurePass1');
 
         $this->client->request('GET', '/api/me', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -167,10 +167,10 @@ final class AuthControllerTest extends WebTestCase
     public function testLoginThrottlingReturns429AfterFiveAttempts(): void
     {
         // Email unique par run pour éviter la pollution du rate limiter entre invocations PHPUnit.
-        $email = 'throttle_' . uniqid() . '@test.com';
+        $email = 'throttle_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
 
-        for ($i = 1; $i <= 5; $i++) {
+        for ($i = 1; $i <= 5; ++$i) {
             $this->jsonRequest('POST', '/api/login', ['email' => $email, 'motDePasse' => 'WrongPass1']);
             self::assertResponseStatusCodeSame(401, "Tentative $i devrait renvoyer 401");
         }

@@ -24,7 +24,7 @@ final class ExpenseControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        $cacheDir = dirname(__DIR__, 3).'/var/share/test/pools/app';
         if (is_dir($cacheDir)) {
             self::removeDir($cacheDir);
         }
@@ -32,16 +32,16 @@ final class ExpenseControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
+        $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
+        $this->em->createQuery('DELETE FROM '.Groupe::class.' g')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
 
         $categorie = $this->em->getRepository(Categorie::class)->findOneBy([]);
-        if ($categorie === null) {
+        if (null === $categorie) {
             $categorie = (new Categorie())
-                ->setLibelle('Test Cat ' . uniqid())
+                ->setLibelle('Test Cat '.uniqid())
                 ->setIcone('test')
                 ->setCouleur('#000000')
                 ->setOrdreAffichage(99);
@@ -55,10 +55,10 @@ final class ExpenseControllerTest extends WebTestCase
     private static function removeDir(string $dir): void
     {
         foreach (scandir($dir) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
+            if ('.' === $item || '..' === $item) {
                 continue;
             }
-            $path = $dir . '/' . $item;
+            $path = $dir.'/'.$item;
             is_dir($path) ? self::removeDir($path) : unlink($path);
         }
         rmdir($dir);
@@ -66,11 +66,11 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseReturns201AndPersistDepenseAndRepartitions(): void
     {
-        $token = $this->createUserAndGetToken('payeur_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('payeur_'.uniqid().'@test.com');
         $groupId = $this->createGroup($token);
         $userId = $this->getCurrentUserId($token);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Courses supermarche',
             'montant' => 30.00,
             'id_categorie' => $this->categorieId,
@@ -94,9 +94,9 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseWithMultipleBeneficiairesAndCorrectSplit(): void
     {
-        $emailA = 'pa_' . uniqid() . '@test.com';
-        $emailB = 'pb_' . uniqid() . '@test.com';
-        $emailC = 'pc_' . uniqid() . '@test.com';
+        $emailA = 'pa_'.uniqid().'@test.com';
+        $emailB = 'pb_'.uniqid().'@test.com';
+        $emailC = 'pc_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -110,7 +110,7 @@ final class ExpenseControllerTest extends WebTestCase
         $this->addMemberToGroup($groupId, $userBId);
         $this->addMemberToGroup($groupId, $userCId);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Repas restaurant',
             'montant' => 30.00,
             'id_categorie' => $this->categorieId,
@@ -128,11 +128,11 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseWithInvalidMontantReturns422(): void
     {
-        $token = $this->createUserAndGetToken('inv_montant_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('inv_montant_'.uniqid().'@test.com');
         $groupId = $this->createGroup($token);
         $userId = $this->getCurrentUserId($token);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Bad montant',
             'montant' => -5.00,
             'id_categorie' => $this->categorieId,
@@ -144,11 +144,11 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseWithZeroMontantReturns422(): void
     {
-        $token = $this->createUserAndGetToken('zero_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('zero_'.uniqid().'@test.com');
         $groupId = $this->createGroup($token);
         $userId = $this->getCurrentUserId($token);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Zero montant',
             'montant' => 0,
             'id_categorie' => $this->categorieId,
@@ -160,8 +160,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseWithNonMemberBeneficiaireReturns422(): void
     {
-        $emailPayeur = 'payeur2_' . uniqid() . '@test.com';
-        $emailOutsider = 'outsider_' . uniqid() . '@test.com';
+        $emailPayeur = 'payeur2_'.uniqid().'@test.com';
+        $emailOutsider = 'outsider_'.uniqid().'@test.com';
 
         $tokenPayeur = $this->createUserAndGetToken($emailPayeur);
         $tokenOutsider = $this->createUserAndGetToken($emailOutsider);
@@ -169,7 +169,7 @@ final class ExpenseControllerTest extends WebTestCase
         $groupId = $this->createGroup($tokenPayeur);
         $outsiderId = $this->getCurrentUserId($tokenOutsider);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Depense invalide',
             'montant' => 10.00,
             'id_categorie' => $this->categorieId,
@@ -181,8 +181,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseAsNonMemberReturns403(): void
     {
-        $emailOwner = 'owner_' . uniqid() . '@test.com';
-        $emailOutsider = 'out_' . uniqid() . '@test.com';
+        $emailOwner = 'owner_'.uniqid().'@test.com';
+        $emailOutsider = 'out_'.uniqid().'@test.com';
 
         $tokenOwner = $this->createUserAndGetToken($emailOwner);
         $tokenOutsider = $this->createUserAndGetToken($emailOutsider);
@@ -190,7 +190,7 @@ final class ExpenseControllerTest extends WebTestCase
         $groupId = $this->createGroup($tokenOwner);
         $ownerId = $this->getCurrentUserId($tokenOwner);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Forbidden depense',
             'montant' => 10.00,
             'id_categorie' => $this->categorieId,
@@ -202,8 +202,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testListExpensesReturnsOnlyGroupExpenses(): void
     {
-        $emailA = 'list_a_' . uniqid() . '@test.com';
-        $emailB = 'list_b_' . uniqid() . '@test.com';
+        $emailA = 'list_a_'.uniqid().'@test.com';
+        $emailB = 'list_b_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -214,22 +214,22 @@ final class ExpenseControllerTest extends WebTestCase
         $userAId = $this->getCurrentUserId($tokenA);
         $userBId = $this->getCurrentUserId($tokenB);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupAId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupAId.'/expenses', [
             'description' => 'Depense groupe A',
             'montant' => 20.00,
             'id_categorie' => $this->categorieId,
             'beneficiaire_ids' => [$userAId],
         ], $tokenA);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupBId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupBId.'/expenses', [
             'description' => 'Depense groupe B',
             'montant' => 15.00,
             'id_categorie' => $this->categorieId,
             'beneficiaire_ids' => [$userBId],
         ], $tokenB);
 
-        $this->client->request('GET', '/api/groups/' . $groupAId . '/expenses', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('GET', '/api/groups/'.$groupAId.'/expenses', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -240,8 +240,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testShowExpenseIncludesBeneficiaireBreakdown(): void
     {
-        $emailA = 'show_a_' . uniqid() . '@test.com';
-        $emailB = 'show_b_' . uniqid() . '@test.com';
+        $emailA = 'show_a_'.uniqid().'@test.com';
+        $emailB = 'show_b_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -252,7 +252,7 @@ final class ExpenseControllerTest extends WebTestCase
 
         $this->addMemberToGroup($groupId, $userBId);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Show test',
             'montant' => 10.00,
             'id_categorie' => $this->categorieId,
@@ -262,8 +262,8 @@ final class ExpenseControllerTest extends WebTestCase
         $createBody = json_decode($this->client->getResponse()->getContent(), true);
         $expenseId = $createBody['id'];
 
-        $this->client->request('GET', '/api/expenses/' . $expenseId, server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('GET', '/api/expenses/'.$expenseId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -282,8 +282,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testShowExpenseReturns403ForNonMember(): void
     {
-        $emailOwner = 'so_owner_' . uniqid() . '@test.com';
-        $emailOther = 'so_other_' . uniqid() . '@test.com';
+        $emailOwner = 'so_owner_'.uniqid().'@test.com';
+        $emailOther = 'so_other_'.uniqid().'@test.com';
 
         $tokenOwner = $this->createUserAndGetToken($emailOwner);
         $tokenOther = $this->createUserAndGetToken($emailOther);
@@ -291,7 +291,7 @@ final class ExpenseControllerTest extends WebTestCase
         $groupId = $this->createGroup($tokenOwner);
         $ownerId = $this->getCurrentUserId($tokenOwner);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Private expense',
             'montant' => 5.00,
             'id_categorie' => $this->categorieId,
@@ -300,8 +300,8 @@ final class ExpenseControllerTest extends WebTestCase
 
         $expenseId = json_decode($this->client->getResponse()->getContent(), true)['id'];
 
-        $this->client->request('GET', '/api/expenses/' . $expenseId, server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenOther,
+        $this->client->request('GET', '/api/expenses/'.$expenseId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenOther,
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -309,8 +309,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseCustomMode(): void
     {
-        $emailA = 'cm_a_' . uniqid() . '@test.com';
-        $emailB = 'cm_b_' . uniqid() . '@test.com';
+        $emailA = 'cm_a_'.uniqid().'@test.com';
+        $emailB = 'cm_b_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -321,7 +321,7 @@ final class ExpenseControllerTest extends WebTestCase
 
         $this->addMemberToGroup($groupId, $userBId);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Repas custom',
             'montant' => 30.00,
             'id_categorie' => $this->categorieId,
@@ -346,11 +346,11 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseCustomModeWithMismatchReturns422(): void
     {
-        $token = $this->createUserAndGetToken('cm_mis_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('cm_mis_'.uniqid().'@test.com');
         $groupId = $this->createGroup($token);
         $userId = $this->getCurrentUserId($token);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Bad custom',
             'montant' => 30.00,
             'id_categorie' => $this->categorieId,
@@ -364,8 +364,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpensePercentageMode(): void
     {
-        $emailA = 'pct_a_' . uniqid() . '@test.com';
-        $emailB = 'pct_b_' . uniqid() . '@test.com';
+        $emailA = 'pct_a_'.uniqid().'@test.com';
+        $emailB = 'pct_b_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -376,7 +376,7 @@ final class ExpenseControllerTest extends WebTestCase
 
         $this->addMemberToGroup($groupId, $userBId);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Repas pct',
             'montant' => 100.00,
             'id_categorie' => $this->categorieId,
@@ -404,8 +404,8 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpensePercentageSumNot100Returns422(): void
     {
-        $emailA = 'pct_bad_' . uniqid() . '@test.com';
-        $emailB = 'pct_bad2_' . uniqid() . '@test.com';
+        $emailA = 'pct_bad_'.uniqid().'@test.com';
+        $emailB = 'pct_bad2_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -416,7 +416,7 @@ final class ExpenseControllerTest extends WebTestCase
 
         $this->addMemberToGroup($groupId, $userBId);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Bad pct',
             'montant' => 100.00,
             'id_categorie' => $this->categorieId,
@@ -433,11 +433,11 @@ final class ExpenseControllerTest extends WebTestCase
 
     public function testCreateExpenseUsesDateDepenseWhenProvided(): void
     {
-        $token = $this->createUserAndGetToken('date_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('date_'.uniqid().'@test.com');
         $groupId = $this->createGroup($token);
         $userId = $this->getCurrentUserId($token);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Depense datee',
             'montant' => 12.00,
             'date_depense' => '2026-03-15',
@@ -477,7 +477,7 @@ final class ExpenseControllerTest extends WebTestCase
 
     private function createGroup(string $token): int
     {
-        $this->jsonRequest('POST', '/api/groups', ['nom' => 'Groupe ' . uniqid()], $token);
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'Groupe '.uniqid()], $token);
         self::assertResponseStatusCodeSame(201);
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -486,7 +486,7 @@ final class ExpenseControllerTest extends WebTestCase
     private function getCurrentUserId(string $token): int
     {
         $this->client->request('GET', '/api/me', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
         self::assertResponseIsSuccessful();
 
@@ -513,8 +513,8 @@ final class ExpenseControllerTest extends WebTestCase
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void
     {
         $server = ['CONTENT_TYPE' => 'application/json'];
-        if ($token !== null) {
-            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        if (null !== $token) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer '.$token;
         }
 
         $this->client->request(

@@ -43,19 +43,61 @@ class Groupe
         $this->dateCreation = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getNom(): string { return $this->nom; }
-    public function setNom(string $nom): self { $this->nom = $nom; return $this; }
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
 
-    public function getCouleur(): ?string { return $this->couleur; }
-    public function setCouleur(?string $couleur): self { $this->couleur = $couleur; return $this; }
+    public function setNom(string $nom): self
+    {
+        $this->nom = $nom;
 
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $description): self { $this->description = $description; return $this; }
+        return $this;
+    }
 
-    public function getDateCreation(): \DateTimeInterface { return $this->dateCreation; }
+    public function getCouleur(): ?string
+    {
+        return $this->couleur;
+    }
 
-    public function getStatut(): StatutGroupe { return $this->statut; }
-    public function setStatut(StatutGroupe $statut): self { $this->statut = $statut; return $this; }
+    public function setCouleur(?string $couleur): self
+    {
+        $this->couleur = $couleur;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+    public function getDateCreation(): \DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
+
+    public function getStatut(): StatutGroupe
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(StatutGroupe $statut): self
+    {
+        $this->statut = $statut;
+
+        return $this;
+    }
 }

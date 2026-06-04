@@ -57,7 +57,7 @@ final class NotificationController extends AbstractController
 
     private function parseUnread(?string $raw): ?bool
     {
-        if ($raw === null || $raw === '') {
+        if (null === $raw || '' === $raw) {
             return null;
         }
 

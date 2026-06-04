@@ -30,15 +30,51 @@ class PreferencesUtilisateur
         $this->dateModification = new \DateTimeImmutable();
     }
 
-    public function getUtilisateur(): Utilisateur { return $this->utilisateur; }
-    public function setUtilisateur(Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
+    public function getUtilisateur(): Utilisateur
+    {
+        return $this->utilisateur;
+    }
 
-    public function isNotificationsEmail(): bool { return $this->notificationsEmail; }
-    public function setNotificationsEmail(bool $value): self { $this->notificationsEmail = $value; return $this; }
+    public function setUtilisateur(Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
 
-    public function isNotificationsPush(): bool { return $this->notificationsPush; }
-    public function setNotificationsPush(bool $value): self { $this->notificationsPush = $value; return $this; }
+        return $this;
+    }
 
-    public function getDateModification(): \DateTimeInterface { return $this->dateModification; }
-    public function setDateModification(\DateTimeInterface $date): self { $this->dateModification = $date; return $this; }
+    public function isNotificationsEmail(): bool
+    {
+        return $this->notificationsEmail;
+    }
+
+    public function setNotificationsEmail(bool $value): self
+    {
+        $this->notificationsEmail = $value;
+
+        return $this;
+    }
+
+    public function isNotificationsPush(): bool
+    {
+        return $this->notificationsPush;
+    }
+
+    public function setNotificationsPush(bool $value): self
+    {
+        $this->notificationsPush = $value;
+
+        return $this;
+    }
+
+    public function getDateModification(): \DateTimeInterface
+    {
+        return $this->dateModification;
+    }
+
+    public function setDateModification(\DateTimeInterface $date): self
+    {
+        $this->dateModification = $date;
+
+        return $this;
+    }
 }

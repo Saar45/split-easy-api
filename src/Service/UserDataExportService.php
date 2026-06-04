@@ -6,7 +6,6 @@ namespace App\Service;
 
 use App\Entity\Appartenir;
 use App\Entity\Depense;
-use App\Entity\Groupe;
 use App\Entity\Remboursement;
 use App\Entity\Repartir;
 use App\Entity\Utilisateur;
@@ -80,6 +79,7 @@ final class UserDataExportService
 
         return array_map(static function (Appartenir $a): array {
             $g = $a->getGroupe();
+
             return [
                 'id'            => $g->getId(),
                 'nom'           => $g->getNom(),

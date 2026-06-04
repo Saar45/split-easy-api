@@ -25,11 +25,11 @@ final class BalancesControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        $cacheDir = dirname(__DIR__, 3).'/var/share/test/pools/app';
         if (is_dir($cacheDir)) {
             foreach (scandir($cacheDir) ?: [] as $item) {
-                if ($item !== '.' && $item !== '..') {
-                    $path = $cacheDir . '/' . $item;
+                if ('.' !== $item && '..' !== $item) {
+                    $path = $cacheDir.'/'.$item;
                     is_dir($path) ? $this->rrmdir($path) : unlink($path);
                 }
             }
@@ -39,17 +39,17 @@ final class BalancesControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->em->createQuery('DELETE FROM ' . Remboursement::class . ' rb')->execute();
-        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.Remboursement::class.' rb')->execute();
+        $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
+        $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
+        $this->em->createQuery('DELETE FROM '.Groupe::class.' g')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
 
         $categorie = $this->em->getRepository(Categorie::class)->findOneBy([]);
-        if ($categorie === null) {
+        if (null === $categorie) {
             $categorie = (new Categorie())
-                ->setLibelle('Cat ' . uniqid())
+                ->setLibelle('Cat '.uniqid())
                 ->setIcone('test')
                 ->setCouleur('#000000')
                 ->setOrdreAffichage(99);
@@ -62,10 +62,10 @@ final class BalancesControllerTest extends WebTestCase
     private function rrmdir(string $dir): void
     {
         foreach (scandir($dir) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
+            if ('.' === $item || '..' === $item) {
                 continue;
             }
-            $p = $dir . '/' . $item;
+            $p = $dir.'/'.$item;
             is_dir($p) ? $this->rrmdir($p) : unlink($p);
         }
         rmdir($dir);
@@ -73,8 +73,8 @@ final class BalancesControllerTest extends WebTestCase
 
     public function testBalancesReturnsSoldesAndRemboursements(): void
     {
-        $tokenA = $this->createUserAndGetToken('a_' . uniqid() . '@test.com');
-        $tokenB = $this->createUserAndGetToken('b_' . uniqid() . '@test.com');
+        $tokenA = $this->createUserAndGetToken('a_'.uniqid().'@test.com');
+        $tokenB = $this->createUserAndGetToken('b_'.uniqid().'@test.com');
 
         $groupId = $this->createGroup($tokenA);
         $userAId = $this->getCurrentUserId($tokenA);
@@ -83,7 +83,7 @@ final class BalancesControllerTest extends WebTestCase
         $this->addMemberToGroup($groupId, $userBId);
 
         // A paie 30 pour {A, B} -> A doit recevoir 15.
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
             'description' => 'Repas',
             'montant' => 30.00,
             'id_categorie' => $this->categorieId,
@@ -91,8 +91,8 @@ final class BalancesControllerTest extends WebTestCase
         ], $tokenA);
         self::assertResponseStatusCodeSame(201);
 
-        $this->client->request('GET', '/api/groups/' . $groupId . '/balances', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('GET', '/api/groups/'.$groupId.'/balances', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
         self::assertResponseIsSuccessful();
 
@@ -116,12 +116,12 @@ final class BalancesControllerTest extends WebTestCase
 
     public function testBalancesForbiddenForNonMember(): void
     {
-        $tokenOwner = $this->createUserAndGetToken('o_' . uniqid() . '@test.com');
-        $tokenOut = $this->createUserAndGetToken('out_' . uniqid() . '@test.com');
+        $tokenOwner = $this->createUserAndGetToken('o_'.uniqid().'@test.com');
+        $tokenOut = $this->createUserAndGetToken('out_'.uniqid().'@test.com');
         $groupId = $this->createGroup($tokenOwner);
 
-        $this->client->request('GET', '/api/groups/' . $groupId . '/balances', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenOut,
+        $this->client->request('GET', '/api/groups/'.$groupId.'/balances', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenOut,
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -146,7 +146,7 @@ final class BalancesControllerTest extends WebTestCase
 
     private function createGroup(string $token): int
     {
-        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G ' . uniqid()], $token);
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G '.uniqid()], $token);
         self::assertResponseStatusCodeSame(201);
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -154,7 +154,7 @@ final class BalancesControllerTest extends WebTestCase
 
     private function getCurrentUserId(string $token): int
     {
-        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
+        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$token]);
         self::assertResponseIsSuccessful();
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -180,8 +180,8 @@ final class BalancesControllerTest extends WebTestCase
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void
     {
         $server = ['CONTENT_TYPE' => 'application/json'];
-        if ($token !== null) {
-            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        if (null !== $token) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer '.$token;
         }
         $this->client->request($method, $uri, server: $server, content: json_encode($payload, JSON_THROW_ON_ERROR));
     }

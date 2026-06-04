@@ -23,27 +23,27 @@ final class GroupControllerTest extends WebTestCase
     protected function setUp(): void
     {
         // Vide le pool cache.app (rate limiter) avant chaque test pour éviter le throttling cumulé.
-        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        $cacheDir = dirname(__DIR__, 3).'/var/share/test/pools/app';
         if (is_dir($cacheDir)) {
             self::removeDir($cacheDir);
         }
 
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
-        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
+        $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
+        $this->em->createQuery('DELETE FROM '.Groupe::class.' g')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
     }
 
     private static function removeDir(string $dir): void
     {
         foreach (scandir($dir) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
+            if ('.' === $item || '..' === $item) {
                 continue;
             }
-            $path = $dir . '/' . $item;
+            $path = $dir.'/'.$item;
             is_dir($path) ? self::removeDir($path) : unlink($path);
         }
         rmdir($dir);
@@ -51,7 +51,7 @@ final class GroupControllerTest extends WebTestCase
 
     public function testCreateGroupReturns201AndAutoAddsCreator(): void
     {
-        $email = 'creator_' . uniqid() . '@test.com';
+        $email = 'creator_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
@@ -87,7 +87,7 @@ final class GroupControllerTest extends WebTestCase
 
     public function testCreateGroupWithEmptyNomReturns422(): void
     {
-        $email = 'invalid_' . uniqid() . '@test.com';
+        $email = 'invalid_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
@@ -101,7 +101,7 @@ final class GroupControllerTest extends WebTestCase
 
     public function testCreateGroupWithBadCouleurFormatReturns422(): void
     {
-        $email = 'bad_couleur_' . uniqid() . '@test.com';
+        $email = 'bad_couleur_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
@@ -115,8 +115,8 @@ final class GroupControllerTest extends WebTestCase
 
     public function testListGroupsReturnsOnlyUserGroups(): void
     {
-        $emailA = 'usera_' . uniqid() . '@test.com';
-        $emailB = 'userb_' . uniqid() . '@test.com';
+        $emailA = 'usera_'.uniqid().'@test.com';
+        $emailB = 'userb_'.uniqid().'@test.com';
 
         $this->register($emailA, 'SecurePass1');
         $this->register($emailB, 'SecurePass1');
@@ -128,7 +128,7 @@ final class GroupControllerTest extends WebTestCase
         $this->jsonRequest('POST', '/api/groups', ['nom' => 'Groupe B'], $tokenB);
 
         $this->client->request('GET', '/api/groups', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -139,8 +139,8 @@ final class GroupControllerTest extends WebTestCase
 
     public function testShowGroupReturnsForbiddenWhenUserIsNotMember(): void
     {
-        $emailA = 'owner_' . uniqid() . '@test.com';
-        $emailB = 'outsider_' . uniqid() . '@test.com';
+        $emailA = 'owner_'.uniqid().'@test.com';
+        $emailB = 'outsider_'.uniqid().'@test.com';
 
         $this->register($emailA, 'SecurePass1');
         $this->register($emailB, 'SecurePass1');
@@ -152,8 +152,8 @@ final class GroupControllerTest extends WebTestCase
         $createBody = json_decode($this->client->getResponse()->getContent(), true);
         $groupId = $createBody['id'];
 
-        $this->client->request('GET', '/api/groups/' . $groupId, server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenB,
+        $this->client->request('GET', '/api/groups/'.$groupId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenB,
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -161,7 +161,7 @@ final class GroupControllerTest extends WebTestCase
 
     public function testDeleteGroupReturns204ForCreator(): void
     {
-        $email = 'del_creator_' . uniqid() . '@test.com';
+        $email = 'del_creator_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
@@ -169,8 +169,8 @@ final class GroupControllerTest extends WebTestCase
         $body = json_decode($this->client->getResponse()->getContent(), true);
         $groupId = $body['id'];
 
-        $this->client->request('DELETE', '/api/groups/' . $groupId, server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+        $this->client->request('DELETE', '/api/groups/'.$groupId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseStatusCodeSame(204);
@@ -179,14 +179,14 @@ final class GroupControllerTest extends WebTestCase
 
     public function testUpdateGroupReturnsUpdatedForCreator(): void
     {
-        $email = 'upd_creator_' . uniqid() . '@test.com';
+        $email = 'upd_creator_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
         $this->jsonRequest('POST', '/api/groups', ['nom' => 'Before'], $token);
         $groupId = json_decode($this->client->getResponse()->getContent(), true)['id'];
 
-        $this->jsonRequest('PUT', '/api/groups/' . $groupId, ['nom' => 'After', 'couleur' => '#FF9800'], $token);
+        $this->jsonRequest('PUT', '/api/groups/'.$groupId, ['nom' => 'After', 'couleur' => '#FF9800'], $token);
 
         self::assertResponseIsSuccessful();
         $body = json_decode($this->client->getResponse()->getContent(), true);
@@ -196,8 +196,8 @@ final class GroupControllerTest extends WebTestCase
 
     public function testUpdateGroupReturns403ForNonCreator(): void
     {
-        $emailCreator = 'upd_owner_' . uniqid() . '@test.com';
-        $emailOther = 'upd_other_' . uniqid() . '@test.com';
+        $emailCreator = 'upd_owner_'.uniqid().'@test.com';
+        $emailOther = 'upd_other_'.uniqid().'@test.com';
         $this->register($emailCreator, 'SecurePass1');
         $this->register($emailOther, 'SecurePass1');
         $tokenCreator = $this->loginAndGetToken($emailCreator, 'SecurePass1');
@@ -206,29 +206,29 @@ final class GroupControllerTest extends WebTestCase
         $this->jsonRequest('POST', '/api/groups', ['nom' => 'Locked'], $tokenCreator);
         $groupId = json_decode($this->client->getResponse()->getContent(), true)['id'];
 
-        $this->jsonRequest('PUT', '/api/groups/' . $groupId, ['nom' => 'Hacked'], $tokenOther);
+        $this->jsonRequest('PUT', '/api/groups/'.$groupId, ['nom' => 'Hacked'], $tokenOther);
 
         self::assertResponseStatusCodeSame(403);
     }
 
     public function testUpdateGroupReturns422ForInvalidCouleur(): void
     {
-        $email = 'upd_invalid_' . uniqid() . '@test.com';
+        $email = 'upd_invalid_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
         $this->jsonRequest('POST', '/api/groups', ['nom' => 'Group'], $token);
         $groupId = json_decode($this->client->getResponse()->getContent(), true)['id'];
 
-        $this->jsonRequest('PUT', '/api/groups/' . $groupId, ['couleur' => 'not-a-hex'], $token);
+        $this->jsonRequest('PUT', '/api/groups/'.$groupId, ['couleur' => 'not-a-hex'], $token);
 
         self::assertResponseStatusCodeSame(422);
     }
 
     public function testDeleteGroupReturns403ForRegularMember(): void
     {
-        $emailCreator = 'creator2_' . uniqid() . '@test.com';
-        $emailMember = 'member_' . uniqid() . '@test.com';
+        $emailCreator = 'creator2_'.uniqid().'@test.com';
+        $emailMember = 'member_'.uniqid().'@test.com';
 
         $this->register($emailCreator, 'SecurePass1');
         $this->register($emailMember, 'SecurePass1');
@@ -254,8 +254,8 @@ final class GroupControllerTest extends WebTestCase
         $this->em->persist($appartenir);
         $this->em->flush();
 
-        $this->client->request('DELETE', '/api/groups/' . $groupId, server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenMember,
+        $this->client->request('DELETE', '/api/groups/'.$groupId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenMember,
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -264,8 +264,8 @@ final class GroupControllerTest extends WebTestCase
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void
     {
         $server = ['CONTENT_TYPE' => 'application/json'];
-        if ($token !== null) {
-            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        if (null !== $token) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer '.$token;
         }
 
         $this->client->request(

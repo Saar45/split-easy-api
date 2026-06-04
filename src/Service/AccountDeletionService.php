@@ -25,7 +25,7 @@ final class AccountDeletionService
     }
 
     /**
-     * @throws ActiveGroupOwnershipException when the user owns active groups with other members.
+     * @throws ActiveGroupOwnershipException when the user owns active groups with other members
      */
     public function delete(Utilisateur $user): void
     {

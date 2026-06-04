@@ -54,46 +54,134 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
         $this->dateInscription = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
-
-    public function getNom(): string { return $this->nom; }
-    public function setNom(string $nom): self { $this->nom = $nom; return $this; }
-
-    public function getPrenom(): string { return $this->prenom; }
-    public function setPrenom(string $prenom): self { $this->prenom = $prenom; return $this; }
-
-    public function getEmail(): string { return $this->email; }
-    public function setEmail(string $email): self { $this->email = $email; return $this; }
-
-    public function getMotDePasse(): string { return $this->motDePasse; }
-    public function setMotDePasse(string $hashedPassword): self { $this->motDePasse = $hashedPassword; return $this; }
-
-    public function getPhotoProfil(): ?string { return $this->photoProfil; }
-    public function setPhotoProfil(?string $photoProfil): self { $this->photoProfil = $photoProfil; return $this; }
-
-    public function getDateInscription(): \DateTimeInterface { return $this->dateInscription; }
-
-    public function isEmailVerifie(): bool { return $this->emailVerifie; }
-    public function setEmailVerifie(bool $emailVerifie): self { $this->emailVerifie = $emailVerifie; return $this; }
-
-    public function getTokenReinitialisation(): ?string { return $this->tokenReinitialisation; }
-    public function setTokenReinitialisation(?string $token): self
+    public function getId(): ?int
     {
-        $this->tokenReinitialisation = $token;
-        $this->dateTokenReinitialisation = $token !== null ? new \DateTimeImmutable() : null;
+        return $this->id;
+    }
+
+    public function getNom(): string
+    {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): self
+    {
+        $this->nom = $nom;
+
         return $this;
     }
 
-    public function getDateTokenReinitialisation(): ?\DateTimeInterface { return $this->dateTokenReinitialisation; }
+    public function getPrenom(): string
+    {
+        return $this->prenom;
+    }
 
-    public function getPassword(): string { return $this->motDePasse; }
+    public function setPrenom(string $prenom): self
+    {
+        $this->prenom = $prenom;
 
-    public function getRoles(): array { return ['ROLE_USER']; }
+        return $this;
+    }
 
-    public function getUserIdentifier(): string { return $this->email; }
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
 
-    public function eraseCredentials(): void {}
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
 
-    public function getPreferences(): ?PreferencesUtilisateur { return $this->preferences; }
-    public function setPreferences(?PreferencesUtilisateur $preferences): self { $this->preferences = $preferences; return $this; }
+        return $this;
+    }
+
+    public function getMotDePasse(): string
+    {
+        return $this->motDePasse;
+    }
+
+    public function setMotDePasse(string $hashedPassword): self
+    {
+        $this->motDePasse = $hashedPassword;
+
+        return $this;
+    }
+
+    public function getPhotoProfil(): ?string
+    {
+        return $this->photoProfil;
+    }
+
+    public function setPhotoProfil(?string $photoProfil): self
+    {
+        $this->photoProfil = $photoProfil;
+
+        return $this;
+    }
+
+    public function getDateInscription(): \DateTimeInterface
+    {
+        return $this->dateInscription;
+    }
+
+    public function isEmailVerifie(): bool
+    {
+        return $this->emailVerifie;
+    }
+
+    public function setEmailVerifie(bool $emailVerifie): self
+    {
+        $this->emailVerifie = $emailVerifie;
+
+        return $this;
+    }
+
+    public function getTokenReinitialisation(): ?string
+    {
+        return $this->tokenReinitialisation;
+    }
+
+    public function setTokenReinitialisation(?string $token): self
+    {
+        $this->tokenReinitialisation = $token;
+        $this->dateTokenReinitialisation = null !== $token ? new \DateTimeImmutable() : null;
+
+        return $this;
+    }
+
+    public function getDateTokenReinitialisation(): ?\DateTimeInterface
+    {
+        return $this->dateTokenReinitialisation;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->motDePasse;
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getPreferences(): ?PreferencesUtilisateur
+    {
+        return $this->preferences;
+    }
+
+    public function setPreferences(?PreferencesUtilisateur $preferences): self
+    {
+        $this->preferences = $preferences;
+
+        return $this;
+    }
 }
