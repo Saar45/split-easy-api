@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Depense;
 use App\Entity\Groupe;
 use App\Entity\Repartir;
 use App\Enum\StatutInvitation;
@@ -114,7 +113,8 @@ final class DebtOptimizerService
     }
 
     /**
-     * @param  array<int, array{prenom: string, nom: string, balance: string}> $balances
+     * @param array<int, array{prenom: string, nom: string, balance: string}> $balances
+     *
      * @return list<array{from: array{id: int, prenom: string, nom: string}, to: array{id: int, prenom: string, nom: string}, montant: string}>
      */
     private function greedy(array $balances): array
@@ -138,11 +138,7 @@ final class DebtOptimizerService
         $iterations = 0;
         while (count($creditors) > 0 && count($debtors) > 0) {
             if (++$iterations > $maxIterations) {
-                throw new \RuntimeException(sprintf(
-                    'DebtOptimizerService: greedy did not converge in %d iterations (n=%d).',
-                    $maxIterations,
-                    count($balances)
-                ));
+                throw new \RuntimeException(sprintf('DebtOptimizerService: greedy did not converge in %d iterations (n=%d).', $maxIterations, count($balances)));
             }
 
             $maxCredId = $this->argMaxBalance($creditors);
@@ -162,10 +158,10 @@ final class DebtOptimizerService
             $creditors[$maxCredId]['balance'] = bcsub($creditors[$maxCredId]['balance'], $montant, 2);
             $debtors[$maxDebId]['balance'] = bcadd($debtors[$maxDebId]['balance'], $montant, 2);
 
-            if (bccomp($creditors[$maxCredId]['balance'], '0.00', 2) === 0) {
+            if (0 === bccomp($creditors[$maxCredId]['balance'], '0.00', 2)) {
                 unset($creditors[$maxCredId]);
             }
-            if (bccomp($debtors[$maxDebId]['balance'], '0.00', 2) === 0) {
+            if (0 === bccomp($debtors[$maxDebId]['balance'], '0.00', 2)) {
                 unset($debtors[$maxDebId]);
             }
         }

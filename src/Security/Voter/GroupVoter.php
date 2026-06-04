@@ -35,6 +35,7 @@ final class GroupVoter extends Voter
         return match ($attribute) {
             self::VIEW => $this->groupService->isMember($subject, $user),
             self::EDIT, self::DELETE => $this->groupService->isCreator($subject, $user),
+            default => false,
         };
     }
 }

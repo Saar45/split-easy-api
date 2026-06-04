@@ -25,7 +25,7 @@ final class DashboardControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        $cacheDir = dirname(__DIR__, 3).'/var/share/test/pools/app';
         if (is_dir($cacheDir)) {
             $this->rrmdir($cacheDir);
         }
@@ -33,17 +33,17 @@ final class DashboardControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->em->createQuery('DELETE FROM ' . Remboursement::class . ' rb')->execute();
-        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.Remboursement::class.' rb')->execute();
+        $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
+        $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
+        $this->em->createQuery('DELETE FROM '.Groupe::class.' g')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
 
         $categorie = $this->em->getRepository(Categorie::class)->findOneBy([]);
-        if ($categorie === null) {
+        if (null === $categorie) {
             $categorie = (new Categorie())
-                ->setLibelle('Cat ' . uniqid())
+                ->setLibelle('Cat '.uniqid())
                 ->setIcone('test')
                 ->setCouleur('#000000')
                 ->setOrdreAffichage(99);
@@ -56,10 +56,10 @@ final class DashboardControllerTest extends WebTestCase
     private function rrmdir(string $dir): void
     {
         foreach (scandir($dir) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
+            if ('.' === $item || '..' === $item) {
                 continue;
             }
-            $path = $dir . '/' . $item;
+            $path = $dir.'/'.$item;
             is_dir($path) ? $this->rrmdir($path) : unlink($path);
         }
         rmdir($dir);
@@ -74,10 +74,10 @@ final class DashboardControllerTest extends WebTestCase
 
     public function testNewUserWithNoGroupsReturnsZeros(): void
     {
-        $token = $this->createUserAndGetToken('dash_empty_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('dash_empty_'.uniqid().'@test.com');
 
         $this->client->request('GET', '/api/dashboard', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -93,9 +93,9 @@ final class DashboardControllerTest extends WebTestCase
     public function testSoldeNetAggregatesAcrossTwoGroups(): void
     {
         // User A pays in group 1 (positive balance) and owes in group 2 (negative balance).
-        $emailA = 'dash_a_' . uniqid() . '@test.com';
-        $emailB = 'dash_b_' . uniqid() . '@test.com';
-        $emailC = 'dash_c_' . uniqid() . '@test.com';
+        $emailA = 'dash_a_'.uniqid().'@test.com';
+        $emailB = 'dash_b_'.uniqid().'@test.com';
+        $emailC = 'dash_c_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -109,7 +109,7 @@ final class DashboardControllerTest extends WebTestCase
         $group1Id = $this->createGroup($tokenA);
         $this->addMemberDirectly($group1Id, $userBId);
 
-        $this->jsonRequest('POST', '/api/groups/' . $group1Id . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$group1Id.'/expenses', [
             'description' => 'Repas groupe 1',
             'montant' => 40.00,
             'id_categorie' => $this->categorieId,
@@ -121,7 +121,7 @@ final class DashboardControllerTest extends WebTestCase
         $group2Id = $this->createGroup($tokenC);
         $this->addMemberDirectly($group2Id, $userAId);
 
-        $this->jsonRequest('POST', '/api/groups/' . $group2Id . '/expenses', [
+        $this->jsonRequest('POST', '/api/groups/'.$group2Id.'/expenses', [
             'description' => 'Courses groupe 2',
             'montant' => 30.00,
             'id_categorie' => $this->categorieId,
@@ -130,7 +130,7 @@ final class DashboardControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
 
         $this->client->request('GET', '/api/dashboard', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -144,8 +144,8 @@ final class DashboardControllerTest extends WebTestCase
 
     public function testDernieresDepensesLimitedToThreeSortedDesc(): void
     {
-        $emailA = 'dash_dep_' . uniqid() . '@test.com';
-        $emailB = 'dash_dep2_' . uniqid() . '@test.com';
+        $emailA = 'dash_dep_'.uniqid().'@test.com';
+        $emailB = 'dash_dep2_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -183,7 +183,7 @@ final class DashboardControllerTest extends WebTestCase
         $this->em->flush();
 
         $this->client->request('GET', '/api/dashboard', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -200,8 +200,8 @@ final class DashboardControllerTest extends WebTestCase
 
     public function testInvitationsEnAttenteCountsOnlyActiveInvitations(): void
     {
-        $emailA = 'dash_inv_a_' . uniqid() . '@test.com';
-        $emailB = 'dash_inv_b_' . uniqid() . '@test.com';
+        $emailA = 'dash_inv_a_'.uniqid().'@test.com';
+        $emailB = 'dash_inv_b_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -210,14 +210,14 @@ final class DashboardControllerTest extends WebTestCase
 
         // Group 1 : valid pending invitation for B (expiration in the future).
         $group1Id = $this->createGroup($tokenA);
-        $this->jsonRequest('POST', '/api/groups/' . $group1Id . '/invitations', [
+        $this->jsonRequest('POST', '/api/groups/'.$group1Id.'/invitations', [
             'email' => $emailB,
         ], $tokenA);
         self::assertResponseStatusCodeSame(201);
 
         // Group 2 : expired invitation for B.
         $group2Id = $this->createGroup($tokenA);
-        $this->jsonRequest('POST', '/api/groups/' . $group2Id . '/invitations', [
+        $this->jsonRequest('POST', '/api/groups/'.$group2Id.'/invitations', [
             'email' => $emailB,
         ], $tokenA);
         self::assertResponseStatusCodeSame(201);
@@ -234,7 +234,7 @@ final class DashboardControllerTest extends WebTestCase
         $this->em->clear();
 
         $this->client->request('GET', '/api/dashboard', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenB,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenB,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -246,10 +246,10 @@ final class DashboardControllerTest extends WebTestCase
 
     public function testDashboardResponseShape(): void
     {
-        $token = $this->createUserAndGetToken('dash_shape_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('dash_shape_'.uniqid().'@test.com');
 
         $this->client->request('GET', '/api/dashboard', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -281,7 +281,7 @@ final class DashboardControllerTest extends WebTestCase
 
     private function getCurrentUserId(string $token): int
     {
-        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
+        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$token]);
         self::assertResponseIsSuccessful();
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -289,7 +289,7 @@ final class DashboardControllerTest extends WebTestCase
 
     private function createGroup(string $token): int
     {
-        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G ' . uniqid()], $token);
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G '.uniqid()], $token);
         self::assertResponseStatusCodeSame(201);
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -315,8 +315,8 @@ final class DashboardControllerTest extends WebTestCase
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void
     {
         $server = ['CONTENT_TYPE' => 'application/json'];
-        if ($token !== null) {
-            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        if (null !== $token) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer '.$token;
         }
         $this->client->request($method, $uri, server: $server, content: json_encode($payload, JSON_THROW_ON_ERROR));
     }

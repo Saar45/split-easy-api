@@ -28,15 +28,51 @@ class Repartir
     #[ORM\Column(name: 'pourcentage', type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $pourcentage = null;
 
-    public function getBeneficiaire(): Utilisateur { return $this->beneficiaire; }
-    public function setBeneficiaire(Utilisateur $beneficiaire): self { $this->beneficiaire = $beneficiaire; return $this; }
+    public function getBeneficiaire(): Utilisateur
+    {
+        return $this->beneficiaire;
+    }
 
-    public function getDepense(): Depense { return $this->depense; }
-    public function setDepense(Depense $depense): self { $this->depense = $depense; return $this; }
+    public function setBeneficiaire(Utilisateur $beneficiaire): self
+    {
+        $this->beneficiaire = $beneficiaire;
 
-    public function getMontantPart(): string { return $this->montantPart; }
-    public function setMontantPart(string $montantPart): self { $this->montantPart = $montantPart; return $this; }
+        return $this;
+    }
 
-    public function getPourcentage(): ?string { return $this->pourcentage; }
-    public function setPourcentage(?string $pourcentage): self { $this->pourcentage = $pourcentage; return $this; }
+    public function getDepense(): Depense
+    {
+        return $this->depense;
+    }
+
+    public function setDepense(Depense $depense): self
+    {
+        $this->depense = $depense;
+
+        return $this;
+    }
+
+    public function getMontantPart(): string
+    {
+        return $this->montantPart;
+    }
+
+    public function setMontantPart(string $montantPart): self
+    {
+        $this->montantPart = $montantPart;
+
+        return $this;
+    }
+
+    public function getPourcentage(): ?string
+    {
+        return $this->pourcentage;
+    }
+
+    public function setPourcentage(?string $pourcentage): self
+    {
+        $this->pourcentage = $pourcentage;
+
+        return $this;
+    }
 }

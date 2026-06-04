@@ -20,12 +20,13 @@ final class SplitCalculatorService
      *
      * @param string $totalMontant    Montant total (ex: "30.00")
      * @param int[]  $beneficiaireIds Tableau d'IDs utilisateurs (non vide)
-     * @return array<int, string>     Map [id => part_arrondie]
+     *
+     * @return array<int, string> Map [id => part_arrondie]
      */
     public function calculateEqual(string $totalMontant, array $beneficiaireIds): array
     {
         $count = count($beneficiaireIds);
-        if ($count === 0) {
+        if (0 === $count) {
             return [];
         }
 
@@ -55,11 +56,12 @@ final class SplitCalculatorService
      *
      * @param string             $totalMontant Montant total (ex: "30.00")
      * @param array<int, string> $amounts      Map [id => montant_exact]
-     * @return array<int, string>              Map [id => part]
+     *
+     * @return array<int, string> Map [id => part]
      */
     public function calculateCustom(string $totalMontant, array $amounts): array
     {
-        if (count($amounts) === 0) {
+        if (0 === count($amounts)) {
             throw new UnprocessableEntityHttpException('Aucun montant fourni pour la répartition personnalisée.');
         }
 
@@ -67,18 +69,14 @@ final class SplitCalculatorService
         $parts = [];
         foreach ($amounts as $id => $montant) {
             if (bccomp($montant, '0.00', 2) <= 0) {
-                throw new UnprocessableEntityHttpException(
-                    sprintf('Le montant du bénéficiaire %d doit être strictement positif.', $id)
-                );
+                throw new UnprocessableEntityHttpException(sprintf('Le montant du bénéficiaire %d doit être strictement positif.', $id));
             }
             $parts[$id] = bcadd('0.00', $montant, 2);
             $sum = bcadd($sum, $parts[$id], 2);
         }
 
-        if (bccomp($sum, $totalMontant, 2) !== 0) {
-            throw new UnprocessableEntityHttpException(
-                sprintf('La somme des montants personnalisés (%s) doit être égale au montant total (%s).', $sum, $totalMontant)
-            );
+        if (0 !== bccomp($sum, $totalMontant, 2)) {
+            throw new UnprocessableEntityHttpException(sprintf('La somme des montants personnalisés (%s) doit être égale au montant total (%s).', $sum, $totalMontant));
         }
 
         return $parts;
@@ -93,28 +91,25 @@ final class SplitCalculatorService
      *
      * @param string             $totalMontant Montant total (ex: "100.00")
      * @param array<int, string> $percentages  Map [id => pourcentage]
-     * @return array<int, string>              Map [id => part_arrondie]
+     *
+     * @return array<int, string> Map [id => part_arrondie]
      */
     public function calculatePercentages(string $totalMontant, array $percentages): array
     {
-        if (count($percentages) === 0) {
+        if (0 === count($percentages)) {
             throw new UnprocessableEntityHttpException('Aucun pourcentage fourni pour la répartition par pourcentage.');
         }
 
         $sumPct = '0.00';
         foreach ($percentages as $id => $pct) {
             if (bccomp($pct, '0.00', 2) <= 0) {
-                throw new UnprocessableEntityHttpException(
-                    sprintf('Le pourcentage du bénéficiaire %d doit être strictement positif.', $id)
-                );
+                throw new UnprocessableEntityHttpException(sprintf('Le pourcentage du bénéficiaire %d doit être strictement positif.', $id));
             }
             $sumPct = bcadd($sumPct, $pct, 2);
         }
 
-        if (bccomp($sumPct, '100.00', 2) !== 0) {
-            throw new UnprocessableEntityHttpException(
-                sprintf('La somme des pourcentages (%s) doit être égale à 100.', $sumPct)
-            );
+        if (0 !== bccomp($sumPct, '100.00', 2)) {
+            throw new UnprocessableEntityHttpException(sprintf('La somme des pourcentages (%s) doit être égale à 100.', $sumPct));
         }
 
         $parts = [];
@@ -127,7 +122,7 @@ final class SplitCalculatorService
 
         // Surplus d'arrondi au dernier ID (le payeur selon §6.3.2)
         $surplus = bcsub($totalMontant, $sumParts, 2);
-        if (bccomp($surplus, '0.00', 2) !== 0) {
+        if (0 !== bccomp($surplus, '0.00', 2)) {
             $lastId = array_key_last($parts);
             $parts[$lastId] = bcadd($parts[$lastId], $surplus, 2);
         }

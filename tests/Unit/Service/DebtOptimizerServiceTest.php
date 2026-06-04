@@ -65,8 +65,8 @@ final class DebtOptimizerServiceTest extends TestCase
     public function testFiveMembersComplexConvergence(): void
     {
         $u = [];
-        for ($i = 1; $i <= 5; $i++) {
-            $u[$i] = $this->makeUser($i, 'U' . $i, 'L');
+        for ($i = 1; $i <= 5; ++$i) {
+            $u[$i] = $this->makeUser($i, 'U'.$i, 'L');
         }
         $groupe = $this->makeGroupe(11);
 
@@ -116,7 +116,7 @@ final class DebtOptimizerServiceTest extends TestCase
             $netti[$tx['to']['id']] = bcsub($netti[$tx['to']['id']], $tx['montant'], 2);
         }
         foreach ($netti as $id => $bal) {
-            self::assertSame('0.00', $bal, 'Solde ' . $id . ' non équilibré');
+            self::assertSame('0.00', $bal, 'Solde '.$id.' non équilibré');
         }
     }
 
@@ -164,9 +164,9 @@ final class DebtOptimizerServiceTest extends TestCase
     }
 
     /**
-     * @param Utilisateur[] $members
-     * @param Depense[] $depenses
-     * @param Repartir[] $repartitions
+     * @param Utilisateur[]     $members
+     * @param Depense[]         $depenses
+     * @param Repartir[]        $repartitions
      * @param array<int, mixed> $remboursementsValides
      */
     private function buildService(
@@ -181,7 +181,7 @@ final class DebtOptimizerServiceTest extends TestCase
             $a = new Appartenir();
             $a->setUtilisateur($u);
             $a->setGroupe($groupe);
-            $a->setTokenInvitation('t' . $u->getId());
+            $a->setTokenInvitation('t'.$u->getId());
 
             return $a;
         }, $members);
@@ -211,7 +211,7 @@ final class DebtOptimizerServiceTest extends TestCase
     private function makeUser(int $id, string $prenom, string $nom): Utilisateur
     {
         $u = new Utilisateur();
-        $u->setEmail($prenom . '@test.com');
+        $u->setEmail($prenom.'@test.com');
         $u->setNom($nom);
         $u->setPrenom($prenom);
         $u->setMotDePasse('x');
@@ -227,7 +227,7 @@ final class DebtOptimizerServiceTest extends TestCase
     private function makeGroupe(int $id): Groupe
     {
         $g = new Groupe();
-        $g->setNom('G' . $id);
+        $g->setNom('G'.$id);
 
         $ref = new \ReflectionClass(Groupe::class);
         $idProp = $ref->getProperty('id');

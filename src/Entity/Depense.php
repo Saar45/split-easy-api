@@ -66,34 +66,121 @@ class Depense
         $this->dateDepense = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getDescription(): string { return $this->description; }
-    public function setDescription(string $description): self { $this->description = $description; return $this; }
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
 
-    public function getMontant(): string { return $this->montant; }
-    public function setMontant(string $montant): self { $this->montant = $montant; return $this; }
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
 
-    public function getDateDepense(): \DateTimeInterface { return $this->dateDepense; }
-    public function setDateDepense(\DateTimeInterface $dateDepense): self { $this->dateDepense = $dateDepense; return $this; }
+        return $this;
+    }
 
-    public function getDateCreation(): \DateTimeInterface { return $this->dateCreation; }
+    public function getMontant(): string
+    {
+        return $this->montant;
+    }
 
-    public function getCheminTicket(): ?string { return $this->cheminTicket; }
-    public function setCheminTicket(?string $cheminTicket): self { $this->cheminTicket = $cheminTicket; return $this; }
+    public function setMontant(string $montant): self
+    {
+        $this->montant = $montant;
 
-    public function getTypeRepartition(): TypeRepartition { return $this->typeRepartition; }
-    public function setTypeRepartition(TypeRepartition $type): self { $this->typeRepartition = $type; return $this; }
+        return $this;
+    }
 
-    public function getDateModification(): ?\DateTimeInterface { return $this->dateModification; }
-    public function setDateModification(?\DateTimeInterface $date): self { $this->dateModification = $date; return $this; }
+    public function getDateDepense(): \DateTimeInterface
+    {
+        return $this->dateDepense;
+    }
 
-    public function getCategorie(): Categorie { return $this->categorie; }
-    public function setCategorie(Categorie $categorie): self { $this->categorie = $categorie; return $this; }
+    public function setDateDepense(\DateTimeInterface $dateDepense): self
+    {
+        $this->dateDepense = $dateDepense;
 
-    public function getPayeur(): Utilisateur { return $this->payeur; }
-    public function setPayeur(Utilisateur $payeur): self { $this->payeur = $payeur; return $this; }
+        return $this;
+    }
 
-    public function getGroupe(): Groupe { return $this->groupe; }
-    public function setGroupe(Groupe $groupe): self { $this->groupe = $groupe; return $this; }
+    public function getDateCreation(): \DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
+
+    public function getCheminTicket(): ?string
+    {
+        return $this->cheminTicket;
+    }
+
+    public function setCheminTicket(?string $cheminTicket): self
+    {
+        $this->cheminTicket = $cheminTicket;
+
+        return $this;
+    }
+
+    public function getTypeRepartition(): TypeRepartition
+    {
+        return $this->typeRepartition;
+    }
+
+    public function setTypeRepartition(TypeRepartition $type): self
+    {
+        $this->typeRepartition = $type;
+
+        return $this;
+    }
+
+    public function getDateModification(): ?\DateTimeInterface
+    {
+        return $this->dateModification;
+    }
+
+    public function setDateModification(?\DateTimeInterface $date): self
+    {
+        $this->dateModification = $date;
+
+        return $this;
+    }
+
+    public function getCategorie(): Categorie
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(Categorie $categorie): self
+    {
+        $this->categorie = $categorie;
+
+        return $this;
+    }
+
+    public function getPayeur(): Utilisateur
+    {
+        return $this->payeur;
+    }
+
+    public function setPayeur(Utilisateur $payeur): self
+    {
+        $this->payeur = $payeur;
+
+        return $this;
+    }
+
+    public function getGroupe(): Groupe
+    {
+        return $this->groupe;
+    }
+
+    public function setGroupe(Groupe $groupe): self
+    {
+        $this->groupe = $groupe;
+
+        return $this;
+    }
 }

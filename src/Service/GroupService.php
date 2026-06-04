@@ -68,7 +68,7 @@ final class GroupService
             'statutInvitation' => StatutInvitation::Acceptee,
         ]);
 
-        return $appartenir !== null;
+        return null !== $appartenir;
     }
 
     public function isCreator(Groupe $groupe, Utilisateur $user): bool
@@ -79,18 +79,18 @@ final class GroupService
             'statutInvitation' => StatutInvitation::Acceptee,
         ]);
 
-        return $appartenir !== null && $appartenir->getRole() === RoleAppartenir::Createur;
+        return null !== $appartenir && RoleAppartenir::Createur === $appartenir->getRole();
     }
 
     public function updateGroup(Groupe $groupe, UpdateGroupDto $dto): Groupe
     {
-        if ($dto->nom !== null) {
+        if (null !== $dto->nom) {
             $groupe->setNom($dto->nom);
         }
-        if ($dto->description !== null) {
+        if (null !== $dto->description) {
             $groupe->setDescription($dto->description);
         }
-        if ($dto->couleur !== null) {
+        if (null !== $dto->couleur) {
             $groupe->setCouleur($dto->couleur);
         }
 

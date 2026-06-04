@@ -29,17 +29,56 @@ class Categorie
     #[ORM\Column(name: 'ordre_affichage', type: 'integer', nullable: true)]
     private ?int $ordreAffichage = null;
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getLibelle(): string { return $this->libelle; }
-    public function setLibelle(string $libelle): self { $this->libelle = $libelle; return $this; }
+    public function getLibelle(): string
+    {
+        return $this->libelle;
+    }
 
-    public function getIcone(): ?string { return $this->icone; }
-    public function setIcone(?string $icone): self { $this->icone = $icone; return $this; }
+    public function setLibelle(string $libelle): self
+    {
+        $this->libelle = $libelle;
 
-    public function getCouleur(): ?string { return $this->couleur; }
-    public function setCouleur(?string $couleur): self { $this->couleur = $couleur; return $this; }
+        return $this;
+    }
 
-    public function getOrdreAffichage(): ?int { return $this->ordreAffichage; }
-    public function setOrdreAffichage(?int $ordreAffichage): self { $this->ordreAffichage = $ordreAffichage; return $this; }
+    public function getIcone(): ?string
+    {
+        return $this->icone;
+    }
+
+    public function setIcone(?string $icone): self
+    {
+        $this->icone = $icone;
+
+        return $this;
+    }
+
+    public function getCouleur(): ?string
+    {
+        return $this->couleur;
+    }
+
+    public function setCouleur(?string $couleur): self
+    {
+        $this->couleur = $couleur;
+
+        return $this;
+    }
+
+    public function getOrdreAffichage(): ?int
+    {
+        return $this->ordreAffichage;
+    }
+
+    public function setOrdreAffichage(?int $ordreAffichage): self
+    {
+        $this->ordreAffichage = $ordreAffichage;
+
+        return $this;
+    }
 }

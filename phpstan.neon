@@ -1,0 +1,9 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 4
+    paths:
+        - src
+        - tests
+    # Doctrine assigns $id via reflection — property.unusedType on entity ids is baselined.

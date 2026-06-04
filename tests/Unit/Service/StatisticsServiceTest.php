@@ -137,7 +137,7 @@ final class StatisticsServiceTest extends TestCase
 
     /**
      * @param list<array{categorie_id: int, libelle: string, couleur: ?string, montant: string}> $categorieRows
-     * @param list<array{date: \DateTimeInterface, montant: string}>                              $rawAmounts
+     * @param list<array{date: \DateTimeInterface, montant: string}>                             $rawAmounts
      */
     private function buildService(array $categorieRows, array $rawAmounts): StatisticsService
     {

@@ -58,7 +58,7 @@ final class StatisticsService
         $totalDepense = $this->sumDecimal(array_map(static fn (array $r) => $r['montant'], $categorieRows));
 
         $parCategorie = $this->buildParCategorie($categorieRows, $totalDepense);
-        $categoriePrincipale = $parCategorie === [] ? null : [
+        $categoriePrincipale = [] === $parCategorie ? null : [
             'id' => $parCategorie[0]['id'],
             'nom' => $parCategorie[0]['nom'],
             'couleur' => $parCategorie[0]['couleur'],
@@ -112,12 +112,12 @@ final class StatisticsService
      */
     private function resolveGroupes(Utilisateur $user, ?int $groupId): array
     {
-        if ($groupId === null) {
+        if (null === $groupId) {
             return $this->appartenirRepository->findAcceptedGroupsForUser($user);
         }
 
         $groupe = $this->groupeRepository->find($groupId);
-        if ($groupe === null) {
+        if (null === $groupe) {
             throw new NotFoundHttpException(sprintf('Groupe %d introuvable.', $groupId));
         }
         $appartenir = $this->appartenirRepository->findOneBy([
@@ -125,7 +125,7 @@ final class StatisticsService
             'utilisateur' => $user,
             'statutInvitation' => StatutInvitation::Acceptee,
         ]);
-        if ($appartenir === null) {
+        if (null === $appartenir) {
             throw new AccessDeniedHttpException('Non membre du groupe.');
         }
 
@@ -133,12 +133,13 @@ final class StatisticsService
     }
 
     /**
-     * @param  list<array{categorie_id: int, libelle: string, couleur: ?string, montant: string}> $rows
+     * @param list<array{categorie_id: int, libelle: string, couleur: ?string, montant: string}> $rows
+     *
      * @return list<array{id: int, nom: string, couleur: ?string, montant: string, pourcentage: string}>
      */
     private function buildParCategorie(array $rows, string $total): array
     {
-        if ($rows === [] || bccomp($total, '0.00', 2) === 0) {
+        if ([] === $rows || 0 === bccomp($total, '0.00', 2)) {
             return [];
         }
 
@@ -166,7 +167,8 @@ final class StatisticsService
     }
 
     /**
-     * @param  list<array{date: \DateTimeInterface, montant: string}> $rawAmounts
+     * @param list<array{date: \DateTimeInterface, montant: string}> $rawAmounts
+     *
      * @return list<array{date: string, montant: string}>
      */
     private function buildEvolution(
@@ -175,7 +177,7 @@ final class StatisticsService
         \DateTimeImmutable $end,
         array $rawAmounts,
     ): array {
-        if ($periode === PeriodeStatistique::Annee) {
+        if (PeriodeStatistique::Annee === $periode) {
             return $this->buildMonthlyEvolution($start, $end, $rawAmounts);
         }
 
@@ -183,7 +185,8 @@ final class StatisticsService
     }
 
     /**
-     * @param  list<array{date: \DateTimeInterface, montant: string}> $rawAmounts
+     * @param list<array{date: \DateTimeInterface, montant: string}> $rawAmounts
+     *
      * @return list<array{date: string, montant: string}>
      */
     private function buildDailyEvolution(
@@ -210,7 +213,8 @@ final class StatisticsService
     }
 
     /**
-     * @param  list<array{date: \DateTimeInterface, montant: string}> $rawAmounts
+     * @param list<array{date: \DateTimeInterface, montant: string}> $rawAmounts
+     *
      * @return list<array{date: string, montant: string}>
      */
     private function buildMonthlyEvolution(

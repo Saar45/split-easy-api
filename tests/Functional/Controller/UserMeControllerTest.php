@@ -28,13 +28,13 @@ final class UserMeControllerTest extends WebTestCase
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
         // Clean in FK-safe order.
-        $this->em->createQuery('DELETE FROM ' . PreferencesUtilisateur::class . ' p')->execute();
-        $this->em->createQuery('DELETE FROM ' . Remboursement::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.PreferencesUtilisateur::class.' p')->execute();
+        $this->em->createQuery('DELETE FROM '.Remboursement::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
+        $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
+        $this->em->createQuery('DELETE FROM '.Groupe::class.' g')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
     }
 
     // -------------------------------------------------------------------
@@ -49,7 +49,7 @@ final class UserMeControllerTest extends WebTestCase
 
     public function testDataExportReturns200WithUserAndRelations(): void
     {
-        $email = 'export_' . uniqid() . '@test.com';
+        $email = 'export_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
@@ -58,7 +58,7 @@ final class UserMeControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
 
         $this->client->request('GET', '/api/users/me/data', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -83,8 +83,8 @@ final class UserMeControllerTest extends WebTestCase
 
     public function testDataExportDoesNotLeakOtherUserPii(): void
     {
-        $emailA = 'owner_export_' . uniqid() . '@test.com';
-        $emailB = 'member_export_' . uniqid() . '@test.com';
+        $emailA = 'owner_export_'.uniqid().'@test.com';
+        $emailB = 'member_export_'.uniqid().'@test.com';
 
         $this->register($emailA, 'SecurePass1');
         $this->register($emailB, 'SecurePass1');
@@ -108,7 +108,7 @@ final class UserMeControllerTest extends WebTestCase
         $this->em->flush();
 
         $this->client->request('GET', '/api/users/me/data', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -124,12 +124,12 @@ final class UserMeControllerTest extends WebTestCase
 
     public function testDeleteAccountReturns204WhenNoGroupOwnership(): void
     {
-        $email = 'del_solo_' . uniqid() . '@test.com';
+        $email = 'del_solo_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
         $this->client->request('DELETE', '/api/users/me', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseStatusCodeSame(204);
@@ -137,8 +137,8 @@ final class UserMeControllerTest extends WebTestCase
 
     public function testDeleteAccountReturns409WhenCreatorOfActiveGroup(): void
     {
-        $emailCreator = 'creator_del_' . uniqid() . '@test.com';
-        $emailMember  = 'member_del_' . uniqid() . '@test.com';
+        $emailCreator = 'creator_del_'.uniqid().'@test.com';
+        $emailMember  = 'member_del_'.uniqid().'@test.com';
 
         $this->register($emailCreator, 'SecurePass1');
         $this->register($emailMember, 'SecurePass1');
@@ -163,7 +163,7 @@ final class UserMeControllerTest extends WebTestCase
         $this->em->flush();
 
         $this->client->request('DELETE', '/api/users/me', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenCreator,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenCreator,
         ]);
 
         self::assertResponseStatusCodeSame(409);
@@ -174,12 +174,12 @@ final class UserMeControllerTest extends WebTestCase
 
     public function testDeleteAccountMakesSubsequentLoginReturn401(): void
     {
-        $email = 'gone_' . uniqid() . '@test.com';
+        $email = 'gone_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
         $this->client->request('DELETE', '/api/users/me', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
         self::assertResponseStatusCodeSame(204);
 
@@ -200,12 +200,12 @@ final class UserMeControllerTest extends WebTestCase
 
     public function testGetPreferencesReturnsDefaultsOnFirstCall(): void
     {
-        $email = 'prefs_' . uniqid() . '@test.com';
+        $email = 'prefs_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
         $this->client->request('GET', '/api/users/me/preferences', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -222,7 +222,7 @@ final class UserMeControllerTest extends WebTestCase
 
     public function testPutPreferencesUpdatesToggle(): void
     {
-        $email = 'prefs_put_' . uniqid() . '@test.com';
+        $email = 'prefs_put_'.uniqid().'@test.com';
         $this->register($email, 'SecurePass1');
         $token = $this->loginAndGetToken($email, 'SecurePass1');
 
@@ -238,7 +238,7 @@ final class UserMeControllerTest extends WebTestCase
 
         // Verify GET returns the persisted value.
         $this->client->request('GET', '/api/users/me/preferences', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
         $body2 = json_decode($this->client->getResponse()->getContent(), true);
         self::assertFalse($body2['notifications_email']);
@@ -251,8 +251,8 @@ final class UserMeControllerTest extends WebTestCase
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void
     {
         $server = ['CONTENT_TYPE' => 'application/json'];
-        if ($token !== null) {
-            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        if (null !== $token) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer '.$token;
         }
 
         $this->client->request(

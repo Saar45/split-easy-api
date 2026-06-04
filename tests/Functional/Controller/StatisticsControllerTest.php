@@ -11,8 +11,6 @@ use App\Entity\Groupe;
 use App\Entity\Remboursement;
 use App\Entity\Repartir;
 use App\Entity\Utilisateur;
-use App\Enum\RoleAppartenir;
-use App\Enum\StatutInvitation;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -26,7 +24,7 @@ final class StatisticsControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        $cacheDir = dirname(__DIR__, 3).'/var/share/test/pools/app';
         if (is_dir($cacheDir)) {
             $this->rrmdir($cacheDir);
         }
@@ -34,20 +32,20 @@ final class StatisticsControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->em->createQuery('DELETE FROM ' . Remboursement::class . ' rb')->execute();
-        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.Remboursement::class.' rb')->execute();
+        $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
+        $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
+        $this->em->createQuery('DELETE FROM '.Groupe::class.' g')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
 
         $courses = $this->em->getRepository(Categorie::class)->findOneBy(['libelle' => 'Courses']);
-        if ($courses === null) {
+        if (null === $courses) {
             $courses = (new Categorie())->setLibelle('Courses')->setIcone('cart')->setCouleur('#4CAF50')->setOrdreAffichage(1);
             $this->em->persist($courses);
         }
         $resto = $this->em->getRepository(Categorie::class)->findOneBy(['libelle' => 'Restaurant']);
-        if ($resto === null) {
+        if (null === $resto) {
             $resto = (new Categorie())->setLibelle('Restaurant')->setIcone('food')->setCouleur('#FF9800')->setOrdreAffichage(2);
             $this->em->persist($resto);
         }
@@ -60,10 +58,10 @@ final class StatisticsControllerTest extends WebTestCase
     private function rrmdir(string $dir): void
     {
         foreach (scandir($dir) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
+            if ('.' === $item || '..' === $item) {
                 continue;
             }
-            $path = $dir . '/' . $item;
+            $path = $dir.'/'.$item;
             is_dir($path) ? $this->rrmdir($path) : unlink($path);
         }
         rmdir($dir);
@@ -77,10 +75,10 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testZeroStateReturnsValidShape(): void
     {
-        $token = $this->createUserAndGetToken('stats_zero_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('stats_zero_'.uniqid().'@test.com');
 
         $this->client->request('GET', '/api/stats?period=mois', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -97,7 +95,7 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testMoisAggregatesAcrossCategories(): void
     {
-        $email = 'stats_mois_' . uniqid() . '@test.com';
+        $email = 'stats_mois_'.uniqid().'@test.com';
         $token = $this->createUserAndGetToken($email);
         $userId = $this->getCurrentUserId($token);
 
@@ -119,7 +117,7 @@ final class StatisticsControllerTest extends WebTestCase
         $this->em->flush();
 
         $this->client->request('GET', '/api/stats?period=mois', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -143,10 +141,10 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testSemaineEvolutionReturnsSevenPoints(): void
     {
-        $token = $this->createUserAndGetToken('stats_sem_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('stats_sem_'.uniqid().'@test.com');
 
         $this->client->request('GET', '/api/stats?period=semaine', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -158,10 +156,10 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testAnneeEvolutionReturnsTwelveMonthlyPoints(): void
     {
-        $token = $this->createUserAndGetToken('stats_an_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('stats_an_'.uniqid().'@test.com');
 
         $this->client->request('GET', '/api/stats?period=annee', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -176,10 +174,10 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testInvalidPeriodReturns400(): void
     {
-        $token = $this->createUserAndGetToken('stats_bad_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('stats_bad_'.uniqid().'@test.com');
 
         $this->client->request('GET', '/api/stats?period=decennie', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseStatusCodeSame(400);
@@ -187,7 +185,7 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testGroupIdScopesStatsToSingleGroup(): void
     {
-        $email = 'stats_grp_' . uniqid() . '@test.com';
+        $email = 'stats_grp_'.uniqid().'@test.com';
         $token = $this->createUserAndGetToken($email);
         $userId = $this->getCurrentUserId($token);
 
@@ -205,8 +203,8 @@ final class StatisticsControllerTest extends WebTestCase
         $this->em->flush();
 
         // Stats limitées au groupe 1.
-        $this->client->request('GET', '/api/stats?period=mois&group_id=' . $group1Id, server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+        $this->client->request('GET', '/api/stats?period=mois&group_id='.$group1Id, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -216,15 +214,15 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testGroupIdNonMemberReturns403(): void
     {
-        $emailA = 'stats_a_' . uniqid() . '@test.com';
-        $emailB = 'stats_b_' . uniqid() . '@test.com';
+        $emailA = 'stats_a_'.uniqid().'@test.com';
+        $emailB = 'stats_b_'.uniqid().'@test.com';
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
 
         $groupBId = $this->createGroup($tokenB);
 
-        $this->client->request('GET', '/api/stats?period=mois&group_id=' . $groupBId, server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('GET', '/api/stats?period=mois&group_id='.$groupBId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
 
         self::assertResponseStatusCodeSame(403);
@@ -232,10 +230,10 @@ final class StatisticsControllerTest extends WebTestCase
 
     public function testCategoriesEndpointReturnsList(): void
     {
-        $token = $this->createUserAndGetToken('cat_list_' . uniqid() . '@test.com');
+        $token = $this->createUserAndGetToken('cat_list_'.uniqid().'@test.com');
 
         $this->client->request('GET', '/api/categories', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $token,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
         ]);
 
         self::assertResponseIsSuccessful();
@@ -255,7 +253,7 @@ final class StatisticsControllerTest extends WebTestCase
         \DateTimeImmutable $date,
     ): void {
         $d = (new Depense())
-            ->setDescription('Test ' . uniqid())
+            ->setDescription('Test '.uniqid())
             ->setMontant($montant)
             ->setDateDepense($date)
             ->setCategorie($categorie)
@@ -289,7 +287,7 @@ final class StatisticsControllerTest extends WebTestCase
 
     private function getCurrentUserId(string $token): int
     {
-        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
+        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$token]);
         self::assertResponseIsSuccessful();
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -297,7 +295,7 @@ final class StatisticsControllerTest extends WebTestCase
 
     private function createGroup(string $token): int
     {
-        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G ' . uniqid()], $token);
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G '.uniqid()], $token);
         self::assertResponseStatusCodeSame(201);
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -306,8 +304,8 @@ final class StatisticsControllerTest extends WebTestCase
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void
     {
         $server = ['CONTENT_TYPE' => 'application/json'];
-        if ($token !== null) {
-            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        if (null !== $token) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer '.$token;
         }
         $this->client->request($method, $uri, server: $server, content: json_encode($payload, JSON_THROW_ON_ERROR));
     }
