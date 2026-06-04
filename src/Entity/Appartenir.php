@@ -25,7 +25,7 @@ class Appartenir
     #[ORM\JoinColumn(name: 'id_groupe', referencedColumnName: 'id_groupe', nullable: false)]
     private Groupe $groupe;
 
-    #[ORM\Column(name: 'date_adhesion', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_adhesion', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateAdhesion = null;
 
     #[ORM\Column(
@@ -40,7 +40,7 @@ class Appartenir
     #[ORM\Column(name: 'token_invitation', type: 'string', length: 250, unique: true)]
     private string $tokenInvitation;
 
-    #[ORM\Column(name: 'date_invitation', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_invitation', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateInvitation;
 
     #[ORM\Column(
@@ -51,6 +51,12 @@ class Appartenir
         columnDefinition: "ENUM('createur','membre') NOT NULL DEFAULT 'membre'",
     )]
     private RoleAppartenir $role = RoleAppartenir::Membre;
+
+    #[ORM\Column(name: 'date_expiration', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeInterface $dateExpiration = null;
+
+    #[ORM\Column(name: 'date_acceptation', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeInterface $dateAcceptation = null;
 
     public function __construct()
     {
@@ -76,4 +82,10 @@ class Appartenir
 
     public function getRole(): RoleAppartenir { return $this->role; }
     public function setRole(RoleAppartenir $role): self { $this->role = $role; return $this; }
+
+    public function getDateExpiration(): ?\DateTimeInterface { return $this->dateExpiration; }
+    public function setDateExpiration(?\DateTimeInterface $date): self { $this->dateExpiration = $date; return $this; }
+
+    public function getDateAcceptation(): ?\DateTimeInterface { return $this->dateAcceptation; }
+    public function setDateAcceptation(?\DateTimeInterface $date): self { $this->dateAcceptation = $date; return $this; }
 }

@@ -27,10 +27,10 @@ class Depense
     #[ORM\Column(name: 'montant', type: 'decimal', precision: 10, scale: 2)]
     private string $montant;
 
-    #[ORM\Column(name: 'date_depense', type: 'date')]
+    #[ORM\Column(name: 'date_depense', type: 'date_immutable')]
     private \DateTimeInterface $dateDepense;
 
-    #[ORM\Column(name: 'date_creation', type: 'datetime', options: ['default' => 'CURRENT_TIMESTAMP'])]
+    #[ORM\Column(name: 'date_creation', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateCreation;
 
     #[ORM\Column(name: 'chemin_ticket', type: 'string', length: 255, nullable: true)]
@@ -45,7 +45,7 @@ class Depense
     )]
     private TypeRepartition $typeRepartition = TypeRepartition::Equitable;
 
-    #[ORM\Column(name: 'date_modification', type: 'datetime', nullable: true)]
+    #[ORM\Column(name: 'date_modification', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeInterface $dateModification = null;
 
     #[ORM\ManyToOne(targetEntity: Categorie::class)]
