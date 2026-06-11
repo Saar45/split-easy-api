@@ -107,8 +107,15 @@ Voir `src/DataFixtures/` après `doctrine:fixtures:load`. Le formateur peut se c
 | F9   | Notifications in-app avec référence polymorphe (jury n°3) |
 | RGPD | `GET /api/users/me/data` + `DELETE /api/users/me` |
 
-Détails par feature : `docs/features/`. Bilan Jalon 5 : `docs/jalon5-summary.md`.
+Détails par feature : [`docs/features/`](docs/features/). Bilan Jalon 5 : [`docs/jalon5-summary.md`](docs/jalon5-summary.md).
+
+## Documentation et suivi
+
+- Cahier des charges technique et dossier de projet v3.0 : remis hors repo (PDF Teams jury).
+- Chapitre Jalon 5 du dossier : remis hors repo (Markdown Teams jury).
+- Suivi opérationnel : [GitHub Issues](https://github.com/Saar45/split-easy-api/issues) et [Pull Requests](https://github.com/Saar45/split-easy-api/pulls).
+- Frontend Angular/Ionic : [`Saar45/split-easy-app`](https://github.com/Saar45/split-easy-app).
 
 ## Statut
 
-v1.0.0 feature-complete et conforme au dossier v3.0.
+Tag de livraison Jalon 5 : [`v1.0.0`](https://github.com/Saar45/split-easy-api/releases/tag/v1.0.0). Feature-complete et conforme au dossier v3.0.
