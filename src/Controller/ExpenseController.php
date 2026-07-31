@@ -12,9 +12,12 @@ use App\Entity\Utilisateur;
 use App\Security\Voter\ExpenseVoter;
 use App\Security\Voter\GroupVoter;
 use App\Service\ExpenseService;
+use App\Service\OcrTicketService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
@@ -27,6 +30,7 @@ final class ExpenseController extends AbstractController
 {
     public function __construct(
         private readonly ExpenseService $expenseService,
+        private readonly OcrTicketService $ocrTicketService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -64,6 +68,17 @@ final class ExpenseController extends AbstractController
         $depenses = $this->expenseService->listExpensesForGroup($groupe);
 
         return $this->json(array_map(fn (Depense $d) => $this->serializeDepense($d), $depenses));
+    }
+
+    #[Route('/api/expenses/scan-ticket', name: 'api_expenses_scan_ticket', methods: ['POST'])]
+    public function scanTicket(Request $request): JsonResponse
+    {
+        $file = $request->files->get('ticket');
+        if (!$file instanceof UploadedFile) {
+            return $this->json(['error' => 'Fichier ticket manquant (champ "ticket").'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json($this->ocrTicketService->scanTicket($file));
     }
 
     #[Route('/api/expenses/{id}', name: 'api_expenses_show', methods: ['GET'], requirements: ['id' => '\d+'])]
