@@ -481,6 +481,10 @@ final class ExpenseControllerTest extends WebTestCase
     {
         $token = $this->createUserAndGetToken('scan_ok_'.uniqid().'@test.com');
 
+        // Le client de test reboote le kernel entre 2 requêtes (comportement Symfony >= 5.3),
+        // ce qui recrée le MockHttpClient : on désactive ce reboot pour garder le mock ci-dessous.
+        $this->client->disableReboot();
+
         $ocrPayload = [
             'IsErroredOnProcessing' => false,
             'ParsedResults' => [
