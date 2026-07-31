@@ -26,3 +26,7 @@ services:
         arguments:
             $lexikHandler: '@lexik_jwt_authentication.handler.authentication_success'
             $refreshTokenTtl: '%gesdinet_jwt_refresh_token.ttl%'
+
+    App\Service\OcrTicketService:
+        arguments:
+            $apiKey: '%env(OCR_SPACE_API_KEY)%'
