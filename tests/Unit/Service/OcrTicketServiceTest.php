@@ -133,6 +133,21 @@ final class OcrTicketServiceTest extends TestCase
         $service->scanTicket($upload);
     }
 
+    public function testInvalidUploadThrows422(): void
+    {
+        $client = new MockHttpClient();
+        $service = new OcrTicketService($client, new TicketParserService(), 'dummy_key');
+
+        $path = tempnam(sys_get_temp_dir(), 'ticket_invalid_');
+        self::assertIsString($path);
+        $this->filesToCleanup[] = $path;
+
+        $upload = new UploadedFile($path, 'ticket.png', 'image/png', \UPLOAD_ERR_INI_SIZE, true);
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $service->scanTicket($upload);
+    }
+
     public function testOversizedFileThrows422(): void
     {
         $client = new MockHttpClient();

@@ -47,6 +47,10 @@ final class OcrTicketService
 
     private function assertValidUpload(UploadedFile $file): string
     {
+        if (!$file->isValid()) {
+            throw new UnprocessableEntityHttpException('Le fichier envoyé est invalide.');
+        }
+
         if ($file->getSize() > self::MAX_SIZE_BYTES) {
             throw new UnprocessableEntityHttpException('Le fichier dépasse la taille maximale autorisée (5 Mo).');
         }
@@ -68,8 +72,8 @@ final class OcrTicketService
             throw new ServiceUnavailableHttpException(null, 'Service OCR indisponible : clé OCR_SPACE_API_KEY manquante.');
         }
 
-        $file = fopen($filePath, 'rb');
-        if (false === $file) {
+        $handle = fopen($filePath, 'rb');
+        if (false === $handle) {
             throw new HttpException(502, 'Impossible de lire le fichier à analyser.');
         }
 
@@ -82,7 +86,7 @@ final class OcrTicketService
                     'OCREngine' => '2',
                     'isOverlayRequired' => 'false',
                     'filetype' => self::ALLOWED_MIME_TYPES[$mimeType],
-                    'file' => $file,
+                    'file' => $handle,
                 ],
             ]);
 
@@ -90,6 +94,8 @@ final class OcrTicketService
             $data = $response->toArray(false);
         } catch (ExceptionInterface $e) {
             throw new HttpException(502, 'Le service OCR est momentanément indisponible.', $e);
+        } finally {
+            fclose($handle);
         }
 
         if ($statusCode >= 300 || true === ($data['IsErroredOnProcessing'] ?? false)) {
