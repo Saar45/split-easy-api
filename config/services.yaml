@@ -30,3 +30,10 @@ services:
     App\Service\OcrTicketService:
         arguments:
             $apiKey: '%env(OCR_SPACE_API_KEY)%'
+
+when@test:
+    services:
+        # Remplace le client HTTP réel par un mock injectable/pilotable depuis les tests fonctionnels
+        # (voir tests/Functional/Controller/ExpenseControllerTest.php).
+        Symfony\Contracts\HttpClient\HttpClientInterface: '@Symfony\Component\HttpClient\MockHttpClient'
+        Symfony\Component\HttpClient\MockHttpClient: ~
