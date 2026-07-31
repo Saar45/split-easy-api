@@ -30,7 +30,7 @@ final class InvitationVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        if ($attribute === self::CREATE) {
+        if (self::CREATE === $attribute) {
             return $subject instanceof Groupe;
         }
         if (in_array($attribute, [self::ACCEPT, self::REFUSE], true)) {

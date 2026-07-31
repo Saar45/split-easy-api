@@ -18,7 +18,7 @@ final class NotificationVoter extends Voter
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return $attribute === self::READ && $subject instanceof Notification;
+        return self::READ === $attribute && $subject instanceof Notification;
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token): bool

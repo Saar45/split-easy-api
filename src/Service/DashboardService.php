@@ -59,7 +59,8 @@ final class DashboardService
     /**
      * Parcourt chaque groupe et extrait la balance de l'utilisateur courant.
      *
-     * @param  \App\Entity\Groupe[] $groupes
+     * @param \App\Entity\Groupe[] $groupes
+     *
      * @return array{string, string} [totalARecevoir, totalDu]
      */
     private function computeBalances(Utilisateur $user, array $groupes): array

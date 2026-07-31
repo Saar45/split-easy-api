@@ -21,7 +21,7 @@ final class PreferencesService
     {
         $prefs = $user->getPreferences();
 
-        if ($prefs === null) {
+        if (null === $prefs) {
             $prefs = (new PreferencesUtilisateur())
                 ->setUtilisateur($user);
             $user->setPreferences($prefs);

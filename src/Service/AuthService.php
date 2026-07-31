@@ -26,7 +26,7 @@ final class AuthService
     /** @throws EmailAlreadyTakenException */
     public function registerUser(RegisterDto $dto): Utilisateur
     {
-        if ($this->userRepository->findOneBy(['email' => $dto->email]) !== null) {
+        if (null !== $this->userRepository->findOneBy(['email' => $dto->email])) {
             throw new EmailAlreadyTakenException($dto->email);
         }
 

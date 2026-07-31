@@ -58,28 +58,97 @@ class Remboursement
         $this->dateCreation = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getMontant(): string { return $this->montant; }
-    public function setMontant(string $montant): self { $this->montant = $montant; return $this; }
+    public function getMontant(): string
+    {
+        return $this->montant;
+    }
 
-    public function getStatut(): StatutRemboursement { return $this->statut; }
-    public function setStatut(StatutRemboursement $statut): self { $this->statut = $statut; return $this; }
+    public function setMontant(string $montant): self
+    {
+        $this->montant = $montant;
 
-    public function getDateCreation(): \DateTimeInterface { return $this->dateCreation; }
+        return $this;
+    }
 
-    public function getDateProposition(): ?\DateTimeInterface { return $this->dateProposition; }
-    public function setDateProposition(?\DateTimeInterface $date): self { $this->dateProposition = $date; return $this; }
+    public function getStatut(): StatutRemboursement
+    {
+        return $this->statut;
+    }
 
-    public function getDateValidation(): ?\DateTimeInterface { return $this->dateValidation; }
-    public function setDateValidation(?\DateTimeInterface $date): self { $this->dateValidation = $date; return $this; }
+    public function setStatut(StatutRemboursement $statut): self
+    {
+        $this->statut = $statut;
 
-    public function getGroupe(): Groupe { return $this->groupe; }
-    public function setGroupe(Groupe $groupe): self { $this->groupe = $groupe; return $this; }
+        return $this;
+    }
 
-    public function getDebiteur(): Utilisateur { return $this->debiteur; }
-    public function setDebiteur(Utilisateur $debiteur): self { $this->debiteur = $debiteur; return $this; }
+    public function getDateCreation(): \DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
 
-    public function getCrediteur(): Utilisateur { return $this->crediteur; }
-    public function setCrediteur(Utilisateur $crediteur): self { $this->crediteur = $crediteur; return $this; }
+    public function getDateProposition(): ?\DateTimeInterface
+    {
+        return $this->dateProposition;
+    }
+
+    public function setDateProposition(?\DateTimeInterface $date): self
+    {
+        $this->dateProposition = $date;
+
+        return $this;
+    }
+
+    public function getDateValidation(): ?\DateTimeInterface
+    {
+        return $this->dateValidation;
+    }
+
+    public function setDateValidation(?\DateTimeInterface $date): self
+    {
+        $this->dateValidation = $date;
+
+        return $this;
+    }
+
+    public function getGroupe(): Groupe
+    {
+        return $this->groupe;
+    }
+
+    public function setGroupe(Groupe $groupe): self
+    {
+        $this->groupe = $groupe;
+
+        return $this;
+    }
+
+    public function getDebiteur(): Utilisateur
+    {
+        return $this->debiteur;
+    }
+
+    public function setDebiteur(Utilisateur $debiteur): self
+    {
+        $this->debiteur = $debiteur;
+
+        return $this;
+    }
+
+    public function getCrediteur(): Utilisateur
+    {
+        return $this->crediteur;
+    }
+
+    public function setCrediteur(Utilisateur $crediteur): self
+    {
+        $this->crediteur = $crediteur;
+
+        return $this;
+    }
 }

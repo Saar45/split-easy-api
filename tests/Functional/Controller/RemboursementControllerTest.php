@@ -23,7 +23,7 @@ final class RemboursementControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        $cacheDir = dirname(__DIR__, 3) . '/var/share/test/pools/app';
+        $cacheDir = dirname(__DIR__, 3).'/var/share/test/pools/app';
         if (is_dir($cacheDir)) {
             $this->rrmdir($cacheDir);
         }
@@ -31,21 +31,21 @@ final class RemboursementControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $this->em->createQuery('DELETE FROM ' . Remboursement::class . ' rb')->execute();
-        $this->em->createQuery('DELETE FROM ' . Repartir::class . ' r')->execute();
-        $this->em->createQuery('DELETE FROM ' . Depense::class . ' d')->execute();
-        $this->em->createQuery('DELETE FROM ' . Appartenir::class . ' a')->execute();
-        $this->em->createQuery('DELETE FROM ' . Groupe::class . ' g')->execute();
-        $this->em->createQuery('DELETE FROM ' . Utilisateur::class . ' u')->execute();
+        $this->em->createQuery('DELETE FROM '.Remboursement::class.' rb')->execute();
+        $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
+        $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
+        $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
+        $this->em->createQuery('DELETE FROM '.Groupe::class.' g')->execute();
+        $this->em->createQuery('DELETE FROM '.Utilisateur::class.' u')->execute();
     }
 
     private function rrmdir(string $dir): void
     {
         foreach (scandir($dir) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
+            if ('.' === $item || '..' === $item) {
                 continue;
             }
-            $p = $dir . '/' . $item;
+            $p = $dir.'/'.$item;
             is_dir($p) ? $this->rrmdir($p) : unlink($p);
         }
         rmdir($dir);
@@ -56,7 +56,7 @@ final class RemboursementControllerTest extends WebTestCase
         [$tokenA, $tokenB, $groupId, $userAId, $userBId] = $this->setupTwoMembers();
 
         // B (débiteur) propose un remboursement vers A (créancier).
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/remboursements', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/remboursements', [
             'id_crediteur' => $userAId,
             'montant' => 15.00,
         ], $tokenB);
@@ -71,12 +71,12 @@ final class RemboursementControllerTest extends WebTestCase
 
     public function testProposeForbiddenIfNotGroupMember(): void
     {
-        $tokenA = $this->createUserAndGetToken('rA_' . uniqid() . '@test.com');
-        $tokenC = $this->createUserAndGetToken('rC_' . uniqid() . '@test.com');
+        $tokenA = $this->createUserAndGetToken('rA_'.uniqid().'@test.com');
+        $tokenC = $this->createUserAndGetToken('rC_'.uniqid().'@test.com');
         $groupId = $this->createGroup($tokenA);
         $userAId = $this->getCurrentUserId($tokenA);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/remboursements', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/remboursements', [
             'id_crediteur' => $userAId,
             'montant' => 10.00,
         ], $tokenC);
@@ -89,8 +89,8 @@ final class RemboursementControllerTest extends WebTestCase
         [$tokenA, $tokenB, $groupId, $userAId, $userBId] = $this->setupTwoMembers();
         $rbId = $this->proposeRb($tokenB, $groupId, $userAId, 12.00);
 
-        $this->client->request('POST', '/api/remboursements/' . $rbId . '/accept', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('POST', '/api/remboursements/'.$rbId.'/accept', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
         self::assertResponseIsSuccessful();
 
@@ -104,8 +104,8 @@ final class RemboursementControllerTest extends WebTestCase
         [$tokenA, $tokenB, $groupId, $userAId] = $this->setupTwoMembers();
         $rbId = $this->proposeRb($tokenB, $groupId, $userAId, 5.00);
 
-        $this->client->request('POST', '/api/remboursements/' . $rbId . '/accept', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenB,
+        $this->client->request('POST', '/api/remboursements/'.$rbId.'/accept', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenB,
         ]);
         self::assertResponseStatusCodeSame(403);
     }
@@ -115,8 +115,8 @@ final class RemboursementControllerTest extends WebTestCase
         [$tokenA, $tokenB, $groupId, $userAId] = $this->setupTwoMembers();
         $rbId = $this->proposeRb($tokenB, $groupId, $userAId, 9.00);
 
-        $this->client->request('POST', '/api/remboursements/' . $rbId . '/reject', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('POST', '/api/remboursements/'.$rbId.'/reject', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
         self::assertResponseIsSuccessful();
         $body = json_decode($this->client->getResponse()->getContent(), true);
@@ -128,8 +128,8 @@ final class RemboursementControllerTest extends WebTestCase
         [$tokenA, $tokenB, $groupId, $userAId] = $this->setupTwoMembers();
         $rbId = $this->proposeRb($tokenB, $groupId, $userAId, 7.00);
 
-        $this->client->request('POST', '/api/remboursements/' . $rbId . '/cancel', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenB,
+        $this->client->request('POST', '/api/remboursements/'.$rbId.'/cancel', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenB,
         ]);
         self::assertResponseIsSuccessful();
         $body = json_decode($this->client->getResponse()->getContent(), true);
@@ -141,8 +141,8 @@ final class RemboursementControllerTest extends WebTestCase
         [$tokenA, $tokenB, $groupId, $userAId] = $this->setupTwoMembers();
         $rbId = $this->proposeRb($tokenB, $groupId, $userAId, 7.00);
 
-        $this->client->request('POST', '/api/remboursements/' . $rbId . '/cancel', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('POST', '/api/remboursements/'.$rbId.'/cancel', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
         self::assertResponseStatusCodeSame(403);
     }
@@ -152,14 +152,14 @@ final class RemboursementControllerTest extends WebTestCase
         [$tokenA, $tokenB, $groupId, $userAId] = $this->setupTwoMembers();
         $rbId = $this->proposeRb($tokenB, $groupId, $userAId, 4.00);
 
-        $this->client->request('POST', '/api/remboursements/' . $rbId . '/accept', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('POST', '/api/remboursements/'.$rbId.'/accept', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
         self::assertResponseIsSuccessful();
 
         // Le deuxième accept doit échouer car le statut n'est plus "propose".
-        $this->client->request('POST', '/api/remboursements/' . $rbId . '/accept', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+        $this->client->request('POST', '/api/remboursements/'.$rbId.'/accept', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
         self::assertResponseStatusCodeSame(409);
     }
@@ -170,7 +170,7 @@ final class RemboursementControllerTest extends WebTestCase
         $this->proposeRb($tokenB, $groupId, $userAId, 3.00);
 
         $this->client->request('GET', '/api/remboursements', server: [
-            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenA,
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
         ]);
         self::assertResponseIsSuccessful();
         $body = json_decode($this->client->getResponse()->getContent(), true);
@@ -180,11 +180,11 @@ final class RemboursementControllerTest extends WebTestCase
 
     public function testSelfReimbursementReturns422(): void
     {
-        $tokenA = $this->createUserAndGetToken('selfRb_' . uniqid() . '@test.com');
+        $tokenA = $this->createUserAndGetToken('selfRb_'.uniqid().'@test.com');
         $groupId = $this->createGroup($tokenA);
         $userAId = $this->getCurrentUserId($tokenA);
 
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/remboursements', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/remboursements', [
             'id_crediteur' => $userAId,
             'montant' => 5.00,
         ], $tokenA);
@@ -195,8 +195,8 @@ final class RemboursementControllerTest extends WebTestCase
     /** @return array{0:string,1:string,2:int,3:int,4:int} */
     private function setupTwoMembers(): array
     {
-        $emailA = 'rb_a_' . uniqid() . '@test.com';
-        $emailB = 'rb_b_' . uniqid() . '@test.com';
+        $emailA = 'rb_a_'.uniqid().'@test.com';
+        $emailB = 'rb_b_'.uniqid().'@test.com';
 
         $tokenA = $this->createUserAndGetToken($emailA);
         $tokenB = $this->createUserAndGetToken($emailB);
@@ -212,7 +212,7 @@ final class RemboursementControllerTest extends WebTestCase
 
     private function proposeRb(string $tokenDebtor, int $groupId, int $creditorId, float $montant): int
     {
-        $this->jsonRequest('POST', '/api/groups/' . $groupId . '/remboursements', [
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/remboursements', [
             'id_crediteur' => $creditorId,
             'montant' => $montant,
         ], $tokenDebtor);
@@ -240,7 +240,7 @@ final class RemboursementControllerTest extends WebTestCase
 
     private function createGroup(string $token): int
     {
-        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G ' . uniqid()], $token);
+        $this->jsonRequest('POST', '/api/groups', ['nom' => 'G '.uniqid()], $token);
         self::assertResponseStatusCodeSame(201);
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -248,7 +248,7 @@ final class RemboursementControllerTest extends WebTestCase
 
     private function getCurrentUserId(string $token): int
     {
-        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer ' . $token]);
+        $this->client->request('GET', '/api/me', server: ['HTTP_AUTHORIZATION' => 'Bearer '.$token]);
         self::assertResponseIsSuccessful();
 
         return json_decode($this->client->getResponse()->getContent(), true)['id'];
@@ -274,8 +274,8 @@ final class RemboursementControllerTest extends WebTestCase
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void
     {
         $server = ['CONTENT_TYPE' => 'application/json'];
-        if ($token !== null) {
-            $server['HTTP_AUTHORIZATION'] = 'Bearer ' . $token;
+        if (null !== $token) {
+            $server['HTTP_AUTHORIZATION'] = 'Bearer '.$token;
         }
         $this->client->request($method, $uri, server: $server, content: json_encode($payload, JSON_THROW_ON_ERROR));
     }

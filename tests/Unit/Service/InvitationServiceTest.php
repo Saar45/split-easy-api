@@ -246,9 +246,9 @@ final class InvitationServiceTest extends TestCase
                 }
 
                 if (isset($criteria['groupe'], $criteria['utilisateur'], $criteria['statutInvitation'])) {
-                    $isCreator = $groupe !== null
+                    $isCreator = null !== $groupe
                         && $criteria['utilisateur'] === $creator
-                        && $criteria['statutInvitation'] === StatutInvitation::Acceptee;
+                        && StatutInvitation::Acceptee === $criteria['statutInvitation'];
                     if (!$isCreator) {
                         return null;
                     }

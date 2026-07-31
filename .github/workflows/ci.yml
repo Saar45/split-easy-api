@@ -39,11 +39,41 @@ jobs:
         env:
           APP_ENV: test
           APP_SECRET: ci_secret
-          DATABASE_URL: "mysql://ci:ci@127.0.0.1:3306/spliteasy_test?serverVersion=8.0&charset=utf8mb4"
+          DATABASE_URL: "mysql://ci:ci@127.0.0.1:3306/spliteasy?serverVersion=8.0&charset=utf8mb4"
           JWT_PASSPHRASE: ci_passphrase
           MINDEE_API_KEY: ci_dummy
           MAILER_DSN: smtp://localhost:1025
         run: php bin/console lint:container
+
+  static-analysis:
+    name: Static analysis
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, intl, zip, bcmath
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: composer install
+        run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: phpstan
+        run: php -d memory_limit=512M vendor/bin/phpstan analyse
+
+      - name: php-cs-fixer (check only)
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
   build:
     name: Symfony boot check
@@ -71,3 +101,78 @@ jobs:
 
       - name: Symfony console responds
         run: php bin/console about
+
+  test:
+    name: PHPUnit tests
+    runs-on: ubuntu-latest
+    needs: lint
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: spliteasy
+          MYSQL_USER: spliteasy
+          MYSQL_PASSWORD: spliteasy
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      APP_ENV: test
+      APP_SECRET: ci_secret_for_tests
+      DATABASE_URL: "mysql://spliteasy:spliteasy@127.0.0.1:3306/spliteasy?serverVersion=8.0&charset=utf8mb4"
+      JWT_SECRET_KEY: "%kernel.project_dir%/config/jwt/private.pem"
+      JWT_PUBLIC_KEY: "%kernel.project_dir%/config/jwt/public.pem"
+      JWT_PASSPHRASE: ci_jwt_passphrase
+      MINDEE_API_KEY: ci_dummy
+      MAILER_DSN: null://null
+      CORS_ALLOW_ORIGIN: "^https?://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_mysql, intl, zip, bcmath
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: composer install
+        run: composer install --no-progress --no-interaction --prefer-dist
+
+      - name: Generate JWT keys
+        run: |
+          mkdir -p config/jwt
+          openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:4096 -pass pass:ci_jwt_passphrase
+          openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:ci_jwt_passphrase
+
+      - name: Create test database
+        run: |
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS spliteasy_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL PRIVILEGES ON spliteasy_test.* TO 'spliteasy'@'%'; FLUSH PRIVILEGES;"
+
+      - name: Run migrations
+        run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+      - name: Run PHPUnit with coverage
+        run: php bin/phpunit --coverage-text --coverage-clover=coverage.xml
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 7

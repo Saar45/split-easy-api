@@ -28,7 +28,7 @@ class NotificationRepository extends ServiceEntityRepository
             ->orderBy('n.dateCreation', 'DESC')
             ->setMaxResults($limit);
 
-        if ($onlyUnread === true) {
+        if (true === $onlyUnread) {
             $qb->andWhere('n.estLu = :lu')->setParameter('lu', false);
         }
 

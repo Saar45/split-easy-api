@@ -26,7 +26,7 @@ final class StatisticsController extends AbstractController
     {
         $periodeParam = (string) $request->query->get('period', PeriodeStatistique::Mois->value);
         $periode = PeriodeStatistique::tryFrom($periodeParam);
-        if ($periode === null) {
+        if (null === $periode) {
             return $this->json([
                 'error' => sprintf('Période invalide : "%s". Valeurs autorisées : semaine, mois, annee.', $periodeParam),
             ], 400);
@@ -34,7 +34,7 @@ final class StatisticsController extends AbstractController
 
         $groupIdParam = $request->query->get('group_id');
         $groupId = null;
-        if ($groupIdParam !== null && $groupIdParam !== '') {
+        if (null !== $groupIdParam && '' !== $groupIdParam) {
             if (!ctype_digit((string) $groupIdParam)) {
                 return $this->json(['error' => 'group_id doit être un entier positif.'], 400);
             }

@@ -42,20 +42,68 @@ class PreferenceNotification
     #[ORM\JoinColumn(name: 'id_utilisateur', referencedColumnName: 'id_utilisateur', nullable: false, onDelete: 'CASCADE')]
     private Utilisateur $utilisateur;
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getTypeNotification(): TypeNotification { return $this->typeNotification; }
-    public function setTypeNotification(TypeNotification $type): self { $this->typeNotification = $type; return $this; }
+    public function getTypeNotification(): TypeNotification
+    {
+        return $this->typeNotification;
+    }
 
-    public function isEstActive(): bool { return $this->estActive; }
-    public function setEstActive(bool $estActive): self { $this->estActive = $estActive; return $this; }
+    public function setTypeNotification(TypeNotification $type): self
+    {
+        $this->typeNotification = $type;
 
-    public function isCanalEmail(): bool { return $this->canalEmail; }
-    public function setCanalEmail(bool $canalEmail): self { $this->canalEmail = $canalEmail; return $this; }
+        return $this;
+    }
 
-    public function getFrequenceRappel(): FrequenceRappel { return $this->frequenceRappel; }
-    public function setFrequenceRappel(FrequenceRappel $freq): self { $this->frequenceRappel = $freq; return $this; }
+    public function isEstActive(): bool
+    {
+        return $this->estActive;
+    }
 
-    public function getUtilisateur(): Utilisateur { return $this->utilisateur; }
-    public function setUtilisateur(Utilisateur $utilisateur): self { $this->utilisateur = $utilisateur; return $this; }
+    public function setEstActive(bool $estActive): self
+    {
+        $this->estActive = $estActive;
+
+        return $this;
+    }
+
+    public function isCanalEmail(): bool
+    {
+        return $this->canalEmail;
+    }
+
+    public function setCanalEmail(bool $canalEmail): self
+    {
+        $this->canalEmail = $canalEmail;
+
+        return $this;
+    }
+
+    public function getFrequenceRappel(): FrequenceRappel
+    {
+        return $this->frequenceRappel;
+    }
+
+    public function setFrequenceRappel(FrequenceRappel $freq): self
+    {
+        $this->frequenceRappel = $freq;
+
+        return $this;
+    }
+
+    public function getUtilisateur(): Utilisateur
+    {
+        return $this->utilisateur;
+    }
+
+    public function setUtilisateur(Utilisateur $utilisateur): self
+    {
+        $this->utilisateur = $utilisateur;
+
+        return $this;
+    }
 }

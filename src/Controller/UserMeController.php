@@ -85,7 +85,7 @@ final class UserMeController extends AbstractController
 
     /**
      * PUT /api/users/me/preferences — updates one or both notification toggles.
-     * Body: { "notifications_email": bool, "notifications_push": bool }
+     * Body: { "notifications_email": bool, "notifications_push": bool }.
      */
     #[Route('/preferences', name: 'preferences_put', methods: ['PUT'])]
     public function putPreferences(#[CurrentUser] Utilisateur $user, Request $request): JsonResponse

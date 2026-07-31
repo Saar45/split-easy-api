@@ -59,34 +59,103 @@ class Notification
         $this->dateCreation = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int { return $this->id; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
 
-    public function getTypeNotification(): TypeNotification { return $this->typeNotification; }
-    public function setTypeNotification(TypeNotification $type): self { $this->typeNotification = $type; return $this; }
+    public function getTypeNotification(): TypeNotification
+    {
+        return $this->typeNotification;
+    }
 
-    public function getTitre(): string { return $this->titre; }
-    public function setTitre(string $titre): self { $this->titre = $titre; return $this; }
+    public function setTypeNotification(TypeNotification $type): self
+    {
+        $this->typeNotification = $type;
 
-    public function getMessage(): string { return $this->message; }
-    public function setMessage(string $message): self { $this->message = $message; return $this; }
+        return $this;
+    }
 
-    public function isEstLu(): bool { return $this->estLu; }
+    public function getTitre(): string
+    {
+        return $this->titre;
+    }
+
+    public function setTitre(string $titre): self
+    {
+        $this->titre = $titre;
+
+        return $this;
+    }
+
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+
+    public function setMessage(string $message): self
+    {
+        $this->message = $message;
+
+        return $this;
+    }
+
+    public function isEstLu(): bool
+    {
+        return $this->estLu;
+    }
+
     public function setEstLu(bool $estLu): self
     {
         $this->estLu = $estLu;
         $this->dateLecture = $estLu ? new \DateTimeImmutable() : null;
+
         return $this;
     }
 
-    public function getDateCreation(): \DateTimeInterface { return $this->dateCreation; }
-    public function getDateLecture(): ?\DateTimeInterface { return $this->dateLecture; }
+    public function getDateCreation(): \DateTimeInterface
+    {
+        return $this->dateCreation;
+    }
 
-    public function getReferenceType(): ?string { return $this->referenceType; }
-    public function setReferenceType(?string $referenceType): self { $this->referenceType = $referenceType; return $this; }
+    public function getDateLecture(): ?\DateTimeInterface
+    {
+        return $this->dateLecture;
+    }
 
-    public function getReferenceId(): ?int { return $this->referenceId; }
-    public function setReferenceId(?int $referenceId): self { $this->referenceId = $referenceId; return $this; }
+    public function getReferenceType(): ?string
+    {
+        return $this->referenceType;
+    }
 
-    public function getDestinataire(): Utilisateur { return $this->destinataire; }
-    public function setDestinataire(Utilisateur $destinataire): self { $this->destinataire = $destinataire; return $this; }
+    public function setReferenceType(?string $referenceType): self
+    {
+        $this->referenceType = $referenceType;
+
+        return $this;
+    }
+
+    public function getReferenceId(): ?int
+    {
+        return $this->referenceId;
+    }
+
+    public function setReferenceId(?int $referenceId): self
+    {
+        $this->referenceId = $referenceId;
+
+        return $this;
+    }
+
+    public function getDestinataire(): Utilisateur
+    {
+        return $this->destinataire;
+    }
+
+    public function setDestinataire(Utilisateur $destinataire): self
+    {
+        $this->destinataire = $destinataire;
+
+        return $this;
+    }
 }

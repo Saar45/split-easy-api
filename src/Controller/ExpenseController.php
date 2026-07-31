@@ -38,7 +38,7 @@ final class ExpenseController extends AbstractController
         #[CurrentUser] Utilisateur $user,
     ): JsonResponse {
         $groupe = $this->em->getRepository(Groupe::class)->find($groupId);
-        if ($groupe === null) {
+        if (null === $groupe) {
             return $this->json(['error' => sprintf('Groupe %d introuvable.', $groupId)], Response::HTTP_NOT_FOUND);
         }
 
@@ -55,7 +55,7 @@ final class ExpenseController extends AbstractController
     public function list(int $groupId): JsonResponse
     {
         $groupe = $this->em->getRepository(Groupe::class)->find($groupId);
-        if ($groupe === null) {
+        if (null === $groupe) {
             return $this->json(['error' => sprintf('Groupe %d introuvable.', $groupId)], Response::HTTP_NOT_FOUND);
         }
 
@@ -101,6 +101,7 @@ final class ExpenseController extends AbstractController
 
     /**
      * @param Repartir[] $repartitions
+     *
      * @return array<string, mixed>
      */
     private function serializeWithRepartition(Depense $depense, array $repartitions): array
