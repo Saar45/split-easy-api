@@ -18,7 +18,6 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class ExpenseControllerTest extends WebTestCase
 {
@@ -488,9 +487,10 @@ final class ExpenseControllerTest extends WebTestCase
                 ['ParsedText' => "CARREFOUR CITY\nTOTAL TTC   23.45\n15/07/2026\n"],
             ],
         ];
-        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+        // MockHttpClient remplace HttpClientInterface en environnement de test (config/services.yaml).
+        self::getContainer()->get(MockHttpClient::class)->setResponseFactory([
             new MockResponse(json_encode($ocrPayload, \JSON_THROW_ON_ERROR)),
-        ]));
+        ]);
 
         // 1x1 PNG valide : finfo doit reconnaitre le vrai contenu, pas l'extension.
         $pngBytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', true);
