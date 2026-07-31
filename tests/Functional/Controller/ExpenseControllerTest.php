@@ -15,6 +15,10 @@ use App\Enum\StatutInvitation;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpClient\MockHttpClient;
+use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class ExpenseControllerTest extends WebTestCase
 {
@@ -448,6 +452,64 @@ final class ExpenseControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(201);
         $body = json_decode($this->client->getResponse()->getContent(), true);
         self::assertSame('2026-03-15', $body['date_depense']);
+    }
+
+    public function testScanTicketWithoutAuthReturns401(): void
+    {
+        $this->client->request('POST', '/api/expenses/scan-ticket');
+
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testScanTicketWithWrongFileTypeReturns422(): void
+    {
+        $token = $this->createUserAndGetToken('scan_wrongtype_'.uniqid().'@test.com');
+
+        $path = tempnam(sys_get_temp_dir(), 'ticket_txt_');
+        self::assertIsString($path);
+        file_put_contents($path, 'ceci nest pas une image');
+        $upload = new UploadedFile($path, 'note.txt', 'text/plain', null, true);
+
+        $this->client->request('POST', '/api/expenses/scan-ticket', files: ['ticket' => $upload], server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+        unlink($path);
+    }
+
+    public function testScanTicketWithValidFileAndMockedOcrReturns200(): void
+    {
+        $token = $this->createUserAndGetToken('scan_ok_'.uniqid().'@test.com');
+
+        $ocrPayload = [
+            'IsErroredOnProcessing' => false,
+            'ParsedResults' => [
+                ['ParsedText' => "CARREFOUR CITY\nTOTAL TTC   23.45\n15/07/2026\n"],
+            ],
+        ];
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            new MockResponse(json_encode($ocrPayload, \JSON_THROW_ON_ERROR)),
+        ]));
+
+        // 1x1 PNG valide : finfo doit reconnaitre le vrai contenu, pas l'extension.
+        $pngBytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', true);
+        $path = tempnam(sys_get_temp_dir(), 'ticket_png_');
+        self::assertIsString($path);
+        file_put_contents($path, $pngBytes);
+        $upload = new UploadedFile($path, 'ticket.png', 'image/png', null, true);
+
+        $this->client->request('POST', '/api/expenses/scan-ticket', files: ['ticket' => $upload], server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+        ]);
+
+        self::assertResponseIsSuccessful();
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertSame('23.45', $body['montant']);
+        self::assertSame('2026-07-15', $body['date']);
+        self::assertSame('CARREFOUR CITY', $body['commercant']);
+        self::assertArrayHasKey('texteBrut', $body);
+        unlink($path);
     }
 
     private function createUserAndGetToken(string $email): string
