@@ -613,7 +613,13 @@ final class ExpenseControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(204);
         self::assertNull($this->em->getRepository(Depense::class)->find($expenseId));
-        self::assertCount(0, $this->em->getRepository(Repartir::class)->findBy(['depense' => $expenseId]));
+
+        $repartitions = $this->em->getRepository(Repartir::class)->createQueryBuilder('r')
+            ->where('IDENTITY(r.depense) = :id')
+            ->setParameter('id', $expenseId)
+            ->getQuery()
+            ->getResult();
+        self::assertCount(0, $repartitions);
     }
 
     public function testDeleteExpenseWithoutAuthReturns401(): void
@@ -847,9 +853,12 @@ final class ExpenseControllerTest extends WebTestCase
 
     private function backdateExpenseCreation(int $expenseId, string $modifier): void
     {
-        $depense = $this->em->getRepository(Depense::class)->find($expenseId);
-        $depense->setDateCreation(new \DateTimeImmutable($modifier));
-        $this->em->flush();
+        // UPDATE en masse plutot qu'un setter sur l'entité : dateCreation ne doit
+        // pas être modifiable via l'API publique de Depense en dehors des tests.
+        $this->em->createQuery('UPDATE '.Depense::class.' d SET d.dateCreation = :date WHERE d.id = :id')
+            ->setParameter('date', new \DateTimeImmutable($modifier))
+            ->setParameter('id', $expenseId)
+            ->execute();
         $this->em->clear();
     }
 
