@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\CreateExpenseDto;
+use App\Dto\UpdateExpenseDto;
 use App\Entity\Depense;
 use App\Entity\Groupe;
 use App\Entity\Repartir;
@@ -22,9 +23,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
-
-// TODO: PUT /api/expenses/{id} (update, deferred to later PR)
-// TODO: DELETE /api/expenses/{id} (delete, deferred to later PR)
 
 final class ExpenseController extends AbstractController
 {
@@ -89,6 +87,28 @@ final class ExpenseController extends AbstractController
         $data = $this->expenseService->getExpenseWithRepartition($depense);
 
         return $this->json($this->serializeWithRepartition($data['depense'], $data['repartitions']));
+    }
+
+    #[Route('/api/expenses/{id}', name: 'api_expenses_update', methods: ['PUT'], requirements: ['id' => '\d+'])]
+    public function update(
+        Depense $depense,
+        #[MapRequestPayload] UpdateExpenseDto $dto,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted(ExpenseVoter::EDIT, $depense);
+
+        $updated = $this->expenseService->updateExpense($depense, $dto);
+        $data = $this->expenseService->getExpenseWithRepartition($updated);
+
+        return $this->json($this->serializeWithRepartition($data['depense'], $data['repartitions']));
+    }
+
+    #[Route('/api/expenses/{id}', name: 'api_expenses_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(Depense $depense): Response
+    {
+        $this->denyAccessUnlessGranted(ExpenseVoter::DELETE, $depense);
+        $this->expenseService->deleteExpense($depense);
+
+        return new Response('', Response::HTTP_NO_CONTENT);
     }
 
     /** @return array<string, mixed> */
