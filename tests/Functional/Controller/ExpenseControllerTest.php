@@ -8,10 +8,12 @@ use App\Entity\Appartenir;
 use App\Entity\Categorie;
 use App\Entity\Depense;
 use App\Entity\Groupe;
+use App\Entity\Remboursement;
 use App\Entity\Repartir;
 use App\Entity\Utilisateur;
 use App\Enum\RoleAppartenir;
 use App\Enum\StatutInvitation;
+use App\Enum\StatutRemboursement;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -35,6 +37,7 @@ final class ExpenseControllerTest extends WebTestCase
         $this->client = static::createClient();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
+        $this->em->createQuery('DELETE FROM '.Remboursement::class.' rb')->execute();
         $this->em->createQuery('DELETE FROM '.Repartir::class.' r')->execute();
         $this->em->createQuery('DELETE FROM '.Depense::class.' d')->execute();
         $this->em->createQuery('DELETE FROM '.Appartenir::class.' a')->execute();
@@ -453,6 +456,257 @@ final class ExpenseControllerTest extends WebTestCase
         self::assertSame('2026-03-15', $body['date_depense']);
     }
 
+    public function testUpdateExpenseReturns200AndRecalculatesRepartitions(): void
+    {
+        $tokenA = $this->createUserAndGetToken('upd_a_'.uniqid().'@test.com');
+        $tokenB = $this->createUserAndGetToken('upd_b_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $expenseId = $this->createExpense($tokenA, $groupId, [$userAId]);
+
+        $this->jsonRequest('PUT', '/api/expenses/'.$expenseId, [
+            'description' => 'Courses modifiees',
+            'montant' => 40.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userAId, $userBId],
+        ], $tokenA);
+
+        self::assertResponseStatusCodeSame(200);
+        $body = json_decode($this->client->getResponse()->getContent(), true);
+        self::assertSame('Courses modifiees', $body['description']);
+        self::assertSame('40.00', $body['montant']);
+        self::assertCount(2, $body['beneficiaires']);
+
+        $parts = array_column($body['beneficiaires'], 'montant_part');
+        sort($parts);
+        self::assertSame(['20.00', '20.00'], $parts);
+
+        $depense = $this->em->getRepository(Depense::class)->find($expenseId);
+        $repartitions = $this->em->getRepository(Repartir::class)->findBy(['depense' => $depense]);
+        self::assertCount(2, $repartitions);
+    }
+
+    public function testUpdateExpenseWithoutAuthReturns401(): void
+    {
+        $token = $this->createUserAndGetToken('upd_noauth_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($token);
+        $userId = $this->getCurrentUserId($token);
+        $expenseId = $this->createExpense($token, $groupId, [$userId]);
+
+        $this->client->request('PUT', '/api/expenses/'.$expenseId, server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'description' => 'Sans auth',
+            'montant' => 10.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userId],
+        ], JSON_THROW_ON_ERROR));
+
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testUpdateExpenseAsNonMemberReturns403(): void
+    {
+        $tokenOwner = $this->createUserAndGetToken('upd_owner_'.uniqid().'@test.com');
+        $tokenOutsider = $this->createUserAndGetToken('upd_outsider_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($tokenOwner);
+        $ownerId = $this->getCurrentUserId($tokenOwner);
+        $expenseId = $this->createExpense($tokenOwner, $groupId, [$ownerId]);
+
+        $this->jsonRequest('PUT', '/api/expenses/'.$expenseId, [
+            'description' => 'Intrus',
+            'montant' => 10.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$ownerId],
+        ], $tokenOutsider);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testUpdateExpenseAsNonPayeurMemberReturns403(): void
+    {
+        $tokenA = $this->createUserAndGetToken('upd_pay_a_'.uniqid().'@test.com');
+        $tokenB = $this->createUserAndGetToken('upd_pay_b_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $expenseId = $this->createExpense($tokenA, $groupId, [$userAId, $userBId]);
+
+        $this->jsonRequest('PUT', '/api/expenses/'.$expenseId, [
+            'description' => 'Non payeur',
+            'montant' => 10.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userAId, $userBId],
+        ], $tokenB);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testUpdateExpenseUnknownIdReturns404(): void
+    {
+        $token = $this->createUserAndGetToken('upd_404_'.uniqid().'@test.com');
+
+        $this->jsonRequest('PUT', '/api/expenses/999999', [
+            'description' => 'Inconnue',
+            'montant' => 10.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [1],
+        ], $token);
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testUpdateExpenseOutsideEditWindowReturns409(): void
+    {
+        $token = $this->createUserAndGetToken('upd_window_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($token);
+        $userId = $this->getCurrentUserId($token);
+        $expenseId = $this->createExpense($token, $groupId, [$userId]);
+
+        $this->backdateExpenseCreation($expenseId, '-25 hours');
+
+        $this->jsonRequest('PUT', '/api/expenses/'.$expenseId, [
+            'description' => 'Trop tard',
+            'montant' => 10.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userId],
+        ], $token);
+
+        self::assertResponseStatusCodeSame(409);
+    }
+
+    public function testUpdateExpenseWithValidatedRemboursementReturns409(): void
+    {
+        $tokenA = $this->createUserAndGetToken('upd_rb_a_'.uniqid().'@test.com');
+        $tokenB = $this->createUserAndGetToken('upd_rb_b_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $expenseId = $this->createExpense($tokenA, $groupId, [$userAId, $userBId]);
+        $this->createValidatedRemboursement($groupId, $userAId, $userBId);
+
+        $this->jsonRequest('PUT', '/api/expenses/'.$expenseId, [
+            'description' => 'Apres remboursement',
+            'montant' => 10.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => [$userAId, $userBId],
+        ], $tokenA);
+
+        self::assertResponseStatusCodeSame(409);
+    }
+
+    public function testDeleteExpenseReturns204AndCascadesRepartitions(): void
+    {
+        $token = $this->createUserAndGetToken('del_ok_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($token);
+        $userId = $this->getCurrentUserId($token);
+        $expenseId = $this->createExpense($token, $groupId, [$userId]);
+
+        $this->client->request('DELETE', '/api/expenses/'.$expenseId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+        ]);
+
+        self::assertResponseStatusCodeSame(204);
+        self::assertNull($this->em->getRepository(Depense::class)->find($expenseId));
+        self::assertCount(0, $this->em->getRepository(Repartir::class)->findBy(['depense' => $expenseId]));
+    }
+
+    public function testDeleteExpenseWithoutAuthReturns401(): void
+    {
+        $token = $this->createUserAndGetToken('del_noauth_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($token);
+        $userId = $this->getCurrentUserId($token);
+        $expenseId = $this->createExpense($token, $groupId, [$userId]);
+
+        $this->client->request('DELETE', '/api/expenses/'.$expenseId);
+
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testDeleteExpenseAsNonMemberReturns403(): void
+    {
+        $tokenOwner = $this->createUserAndGetToken('del_owner_'.uniqid().'@test.com');
+        $tokenOutsider = $this->createUserAndGetToken('del_outsider_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($tokenOwner);
+        $ownerId = $this->getCurrentUserId($tokenOwner);
+        $expenseId = $this->createExpense($tokenOwner, $groupId, [$ownerId]);
+
+        $this->client->request('DELETE', '/api/expenses/'.$expenseId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenOutsider,
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testDeleteExpenseAsNonPayeurMemberReturns403(): void
+    {
+        $tokenA = $this->createUserAndGetToken('del_pay_a_'.uniqid().'@test.com');
+        $tokenB = $this->createUserAndGetToken('del_pay_b_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $expenseId = $this->createExpense($tokenA, $groupId, [$userAId, $userBId]);
+
+        $this->client->request('DELETE', '/api/expenses/'.$expenseId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenB,
+        ]);
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testDeleteExpenseUnknownIdReturns404(): void
+    {
+        $token = $this->createUserAndGetToken('del_404_'.uniqid().'@test.com');
+
+        $this->client->request('DELETE', '/api/expenses/999999', server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+        ]);
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testDeleteExpenseOutsideEditWindowReturns409(): void
+    {
+        $token = $this->createUserAndGetToken('del_window_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($token);
+        $userId = $this->getCurrentUserId($token);
+        $expenseId = $this->createExpense($token, $groupId, [$userId]);
+
+        $this->backdateExpenseCreation($expenseId, '-25 hours');
+
+        $this->client->request('DELETE', '/api/expenses/'.$expenseId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$token,
+        ]);
+
+        self::assertResponseStatusCodeSame(409);
+    }
+
+    public function testDeleteExpenseWithValidatedRemboursementReturns409(): void
+    {
+        $tokenA = $this->createUserAndGetToken('del_rb_a_'.uniqid().'@test.com');
+        $tokenB = $this->createUserAndGetToken('del_rb_b_'.uniqid().'@test.com');
+        $groupId = $this->createGroup($tokenA);
+        $userAId = $this->getCurrentUserId($tokenA);
+        $userBId = $this->getCurrentUserId($tokenB);
+        $this->addMemberToGroup($groupId, $userBId);
+
+        $expenseId = $this->createExpense($tokenA, $groupId, [$userAId, $userBId]);
+        $this->createValidatedRemboursement($groupId, $userAId, $userBId);
+
+        $this->client->request('DELETE', '/api/expenses/'.$expenseId, server: [
+            'HTTP_AUTHORIZATION' => 'Bearer '.$tokenA,
+        ]);
+
+        self::assertResponseStatusCodeSame(409);
+    }
+
     public function testScanTicketWithoutAuthReturns401(): void
     {
         $this->client->request('POST', '/api/expenses/scan-ticket');
@@ -574,6 +828,48 @@ final class ExpenseControllerTest extends WebTestCase
 
         $this->em->persist($appartenir);
         $this->em->flush();
+    }
+
+    /** @param int[] $beneficiaireIds */
+    private function createExpense(string $token, int $groupId, array $beneficiaireIds): int
+    {
+        $this->jsonRequest('POST', '/api/groups/'.$groupId.'/expenses', [
+            'description' => 'Depense initiale',
+            'montant' => 30.00,
+            'id_categorie' => $this->categorieId,
+            'beneficiaire_ids' => $beneficiaireIds,
+        ], $token);
+
+        self::assertResponseStatusCodeSame(201);
+
+        return json_decode($this->client->getResponse()->getContent(), true)['id'];
+    }
+
+    private function backdateExpenseCreation(int $expenseId, string $modifier): void
+    {
+        $depense = $this->em->getRepository(Depense::class)->find($expenseId);
+        $depense->setDateCreation(new \DateTimeImmutable($modifier));
+        $this->em->flush();
+        $this->em->clear();
+    }
+
+    private function createValidatedRemboursement(int $groupId, int $debiteurId, int $crediteurId): void
+    {
+        $groupe = $this->em->getRepository(Groupe::class)->find($groupId);
+        $debiteur = $this->em->getRepository(Utilisateur::class)->find($debiteurId);
+        $crediteur = $this->em->getRepository(Utilisateur::class)->find($crediteurId);
+
+        $remboursement = (new Remboursement())
+            ->setGroupe($groupe)
+            ->setDebiteur($debiteur)
+            ->setCrediteur($crediteur)
+            ->setMontant('5.00')
+            ->setStatut(StatutRemboursement::Valide)
+            ->setDateValidation(new \DateTimeImmutable());
+
+        $this->em->persist($remboursement);
+        $this->em->flush();
+        $this->em->clear();
     }
 
     private function jsonRequest(string $method, string $uri, array $payload, ?string $token): void

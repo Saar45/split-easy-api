@@ -112,6 +112,15 @@ class Depense
         return $this->dateCreation;
     }
 
+    // Setter dédié aux tests de la fenêtre de modification 24h (§6.3.2) : la
+    // date de création n'est normalement jamais réécrite en production.
+    public function setDateCreation(\DateTimeInterface $dateCreation): self
+    {
+        $this->dateCreation = $dateCreation;
+
+        return $this;
+    }
+
     public function getCheminTicket(): ?string
     {
         return $this->cheminTicket;
