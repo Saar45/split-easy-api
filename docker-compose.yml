@@ -51,6 +51,18 @@ services:
     networks:
       - spliteasy
 
+  front:
+    build:
+      context: ../split-easy-app
+    container_name: spliteasy_front
+    profiles: ["dev"]
+    depends_on:
+      - nginx
+    ports:
+      - "${FRONT_HOST_PORT:-8100}:80"
+    networks:
+      - spliteasy
+
   phpmyadmin:
     image: phpmyadmin:5.2
     container_name: spliteasy_phpmyadmin
