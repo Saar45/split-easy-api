@@ -35,6 +35,13 @@ final class AuthControllerTest extends WebTestCase
         $body = json_decode($this->client->getResponse()->getContent(), true);
         self::assertSame('new@test.com', $body['email']);
         self::assertArrayHasKey('id', $body);
+
+        $user = $this->em->getRepository(Utilisateur::class)->findOneBy(['email' => 'new@test.com']);
+        self::assertEqualsWithDelta(
+            (new \DateTimeImmutable())->getTimestamp(),
+            $user->getCguAccepteesLe()->getTimestamp(),
+            5,
+        );
     }
 
     public function testRegisterDuplicateEmailReturns409(): void
