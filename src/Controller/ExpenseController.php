@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\CreateExpenseDto;
+use App\Dto\UpdateExpenseDto;
 use App\Entity\Depense;
 use App\Entity\Groupe;
 use App\Entity\Repartir;
@@ -12,21 +13,22 @@ use App\Entity\Utilisateur;
 use App\Security\Voter\ExpenseVoter;
 use App\Security\Voter\GroupVoter;
 use App\Service\ExpenseService;
+use App\Service\OcrTicketService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
-// TODO: PUT /api/expenses/{id} (update, deferred to later PR)
-// TODO: DELETE /api/expenses/{id} (delete, deferred to later PR)
-
 final class ExpenseController extends AbstractController
 {
     public function __construct(
         private readonly ExpenseService $expenseService,
+        private readonly OcrTicketService $ocrTicketService,
         private readonly EntityManagerInterface $em,
     ) {
     }
@@ -66,6 +68,17 @@ final class ExpenseController extends AbstractController
         return $this->json(array_map(fn (Depense $d) => $this->serializeDepense($d), $depenses));
     }
 
+    #[Route('/api/expenses/scan-ticket', name: 'api_expenses_scan_ticket', methods: ['POST'])]
+    public function scanTicket(Request $request): JsonResponse
+    {
+        $file = $request->files->get('ticket');
+        if (!$file instanceof UploadedFile) {
+            return $this->json(['error' => 'Fichier ticket manquant (champ "ticket").'], Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json($this->ocrTicketService->scanTicket($file));
+    }
+
     #[Route('/api/expenses/{id}', name: 'api_expenses_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(Depense $depense): JsonResponse
     {
@@ -74,6 +87,28 @@ final class ExpenseController extends AbstractController
         $data = $this->expenseService->getExpenseWithRepartition($depense);
 
         return $this->json($this->serializeWithRepartition($data['depense'], $data['repartitions']));
+    }
+
+    #[Route('/api/expenses/{id}', name: 'api_expenses_update', methods: ['PUT'], requirements: ['id' => '\d+'])]
+    public function update(
+        Depense $depense,
+        #[MapRequestPayload] UpdateExpenseDto $dto,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted(ExpenseVoter::EDIT, $depense);
+
+        $updated = $this->expenseService->updateExpense($depense, $dto);
+        $data = $this->expenseService->getExpenseWithRepartition($updated);
+
+        return $this->json($this->serializeWithRepartition($data['depense'], $data['repartitions']));
+    }
+
+    #[Route('/api/expenses/{id}', name: 'api_expenses_delete', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    public function delete(Depense $depense): Response
+    {
+        $this->denyAccessUnlessGranted(ExpenseVoter::DELETE, $depense);
+        $this->expenseService->deleteExpense($depense);
+
+        return new Response('', Response::HTTP_NO_CONTENT);
     }
 
     /** @return array<string, mixed> */

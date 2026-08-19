@@ -32,11 +32,21 @@ docker compose exec app php bin/console doctrine:fixtures:load --no-interaction
 Les mots de passe et secrets vivent dans `.env.local`, chargé par Symfony **et** par
 docker-compose via la directive `env_file`.
 
+### OCR ticket de caisse (F3)
+
+`OCR_SPACE_API_KEY` active `POST /api/expenses/scan-ticket` (extraction montant/date/commerçant
+via [OCR.space](https://ocr.space/ocrapi)). Clé gratuite via inscription email, 25 000 requêtes/mois.
+Sans clé, l'endpoint répond 503.
+
 | Service     | URL                   | Note                        |
 | ----------- | --------------------- | --------------------------- |
 | API Symfony | http://localhost:8080 | via nginx                   |
+| Front Angular | http://localhost:8100 | dev uniquement (profile dev), build depuis `../split-easy-app` |
 | phpMyAdmin  | http://localhost:8081 | dev uniquement (profile dev)|
 | MySQL       | localhost:3306        | accès depuis l'hôte         |
+
+Le service `front` attend que le repo `split-easy-app` soit cloné au même niveau que ce repo
+(`../split-easy-app`), conformément à la section IV.2.4 du dossier.
 
 Mode **prod** (sans phpMyAdmin) :
 ```bash

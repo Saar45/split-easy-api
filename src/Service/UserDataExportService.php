@@ -46,6 +46,7 @@ final class UserDataExportService
             'prenom'           => $user->getPrenom(),
             'date_inscription' => $user->getDateInscription()->format(\DateTimeInterface::ATOM),
             'email_verifie'    => $user->isEmailVerifie(),
+            'cgu_acceptees_le' => $user->getCguAccepteesLe()->format(\DateTimeInterface::ATOM),
         ];
     }
 
