@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logo.png" width="200" alt="SplitEasy">
+</p>
+
 # split-easy-api
 
 [![CI](https://github.com/Saar45/split-easy-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Saar45/split-easy-api/actions/workflows/ci.yml)
