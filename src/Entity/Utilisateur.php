@@ -37,6 +37,10 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'date_inscription', type: 'datetime_immutable', options: ['default' => 'CURRENT_TIMESTAMP'])]
     private \DateTimeInterface $dateInscription;
 
+    // Preuve du consentement RGPD explicite aux CGU (dossier §3.4.5). Renseigné par AuthService::registerUser().
+    #[ORM\Column(name: 'cgu_acceptees_le', type: 'datetime_immutable')]
+    private \DateTimeInterface $cguAccepteesLe;
+
     #[ORM\Column(name: 'email_verifie', type: 'boolean', options: ['default' => false])]
     private bool $emailVerifie = false;
 
@@ -122,6 +126,18 @@ class Utilisateur implements UserInterface, PasswordAuthenticatedUserInterface
     public function getDateInscription(): \DateTimeInterface
     {
         return $this->dateInscription;
+    }
+
+    public function getCguAccepteesLe(): \DateTimeInterface
+    {
+        return $this->cguAccepteesLe;
+    }
+
+    public function setCguAccepteesLe(\DateTimeInterface $cguAccepteesLe): self
+    {
+        $this->cguAccepteesLe = $cguAccepteesLe;
+
+        return $this;
     }
 
     public function isEmailVerifie(): bool

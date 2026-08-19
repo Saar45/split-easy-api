@@ -41,8 +41,12 @@ Sans clé, l'endpoint répond 503.
 | Service     | URL                   | Note                        |
 | ----------- | --------------------- | --------------------------- |
 | API Symfony | http://localhost:8080 | via nginx                   |
+| Front Angular | http://localhost:8100 | dev uniquement (profile dev), build depuis `../split-easy-app` |
 | phpMyAdmin  | http://localhost:8081 | dev uniquement (profile dev)|
 | MySQL       | localhost:3306        | accès depuis l'hôte         |
+
+Le service `front` attend que le repo `split-easy-app` soit cloné au même niveau que ce repo
+(`../split-easy-app`), conformément à la section IV.2.4 du dossier.
 
 Mode **prod** (sans phpMyAdmin) :
 ```bash

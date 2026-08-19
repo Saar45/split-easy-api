@@ -35,6 +35,7 @@ final class AuthService
         $user->setPrenom($dto->prenom);
         $user->setEmail($dto->email);
         $user->setMotDePasse($this->passwordHasher->hashPassword($user, $dto->motDePasse));
+        $user->setCguAccepteesLe(new \DateTimeImmutable());
 
         $this->em->persist($user);
 

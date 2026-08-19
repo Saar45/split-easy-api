@@ -40,6 +40,7 @@ final class AuthServiceTest extends TestCase
         self::assertSame('mouhamed@test.com', $user->getEmail());
         self::assertSame('$argon2id$hashed$', $user->getMotDePasse());
         self::assertFalse($user->isEmailVerifie());
+        self::assertInstanceOf(\DateTimeInterface::class, $user->getCguAccepteesLe());
     }
 
     public function testRegisterThrowsWhenEmailAlreadyExists(): void
