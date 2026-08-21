@@ -6,7 +6,7 @@
 
 [![CI](https://github.com/Saar45/split-easy-api/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Saar45/split-easy-api/actions/workflows/ci.yml)
 
-API REST Symfony de l'application **Split-Easy** — gestion de dépenses partagées entre groupes.
+API REST Symfony de l'application **Split-Easy** : gestion de dépenses partagées entre groupes.
 Projet fil rouge CDA niveau 6 (RNCP 37873), IPSSI promotion 2025-2026.
 
 Frontend Angular/Ionic : repo séparé `split-easy-app`.
@@ -17,7 +17,7 @@ Frontend Angular/Ionic : repo séparé `split-easy-app`.
 git clone <repo-url> split-easy-api
 cd split-easy-api
 
-# 1. Créer .env.local depuis le template — y mettre les vrais mots de passe.
+# 1. Créer .env.local depuis le template, y mettre les vrais mots de passe.
 cp .env.example .env.local
 $EDITOR .env.local
 
@@ -120,7 +120,7 @@ Voir `src/DataFixtures/` après `doctrine:fixtures:load`. Le formateur peut se c
 | F3   | Dépenses : `POST`/`PUT`/`DELETE` (modification et suppression limitées à 24h après création, verrouillées si un remboursement du groupe est déjà validé) + catégories + `POST /api/expenses/scan-ticket` (OCR.space) |
 | F4   | Répartition 3 modes : équitable, personnalisée, pourcentage |
 | F5   | Algorithme greedy de réduction des dettes (jury n°1) |
-| F6   | Validation bipartite remboursements — machine à 5 états (jury n°2) |
+| F6   | Validation bipartite remboursements (machine à 5 états, jury n°2) |
 | F7   | Invitations par lien unique (token 7j) |
 | F8   | Statistiques agrégées par catégorie / membre / période |
 | F9   | Notifications in-app avec référence polymorphe (jury n°3) |
