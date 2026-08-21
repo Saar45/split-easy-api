@@ -52,6 +52,9 @@ Sans clé, l'endpoint répond 503.
 Le service `front` attend que le repo `split-easy-app` soit cloné au même niveau que ce repo
 (`../split-easy-app`), conformément à la section IV.2.4 du dossier.
 
+Si le port 8080 est déjà occupé sur l'hôte, définir `NGINX_HTTP_PORT` dans `.env.local`
+(ex. `NGINX_HTTP_PORT=8090`) avant de lancer `docker compose --profile dev up -d`.
+
 Mode **prod** (sans phpMyAdmin) :
 ```bash
 docker compose up -d
