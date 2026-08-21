@@ -1,4 +1,4 @@
-# F8 — Statistiques
+# F8 - Statistiques
 
 Référence dossier : §III.5 (F8) et §6.5 (modèle de données).
 
@@ -66,10 +66,10 @@ Couvert par le test unitaire `StatisticsServiceTest::testParCategoriePourcentage
 ## Frontend (split-easy-app)
 
 - `chart.js` + `ng2-charts` installés.
-- `src/app/core/models/statistics.model.ts` — interfaces miroir.
-- `src/app/core/services/statistics.service.ts` — wrapper HTTP.
-- `src/app/core/services/category.service.ts` — nouveau service avec cache `shareReplay`, remplace `DEFAULT_CATEGORIES` (renommé `FALLBACK_CATEGORIES`, conservé comme fallback en cas d'erreur HTTP).
-- `src/app/features/statistiques/statistiques.page.*` — page câblée :
+- `src/app/core/models/statistics.model.ts` - interfaces miroir.
+- `src/app/core/services/statistics.service.ts` - wrapper HTTP.
+- `src/app/core/services/category.service.ts` - nouveau service avec cache `shareReplay`, remplace `DEFAULT_CATEGORIES` (renommé `FALLBACK_CATEGORIES`, conservé comme fallback en cas d'erreur HTTP).
+- `src/app/features/statistiques/statistiques.page.*` - page câblée :
   - Doughnut chart sur `par_categorie`.
   - Line chart sur `evolution`.
   - Liste détaillée par catégorie avec barres de progression colorées (couleur depuis la BDD).
