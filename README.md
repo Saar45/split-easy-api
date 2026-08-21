@@ -52,6 +52,9 @@ Sans clé, l'endpoint répond 503.
 Le service `front` attend que le repo `split-easy-app` soit cloné au même niveau que ce repo
 (`../split-easy-app`), conformément à la section IV.2.4 du dossier.
 
+Si le port 8080 est déjà occupé sur l'hôte, définir `NGINX_HTTP_PORT` dans `.env.local`
+(ex. `NGINX_HTTP_PORT=8090`) avant de lancer `docker compose --profile dev up -d`.
+
 Mode **prod** (sans phpMyAdmin) :
 ```bash
 docker compose up -d
@@ -102,17 +105,19 @@ split-easy-api/
 docker compose exec app php bin/phpunit
 ```
 
+Suite verte : 183 tests / 999 assertions.
+
 ## Comptes de test
 
 Voir `src/DataFixtures/` après `doctrine:fixtures:load`. Le formateur peut se connecter immédiatement avec les comptes seedés (typiquement `alice@test.com` / `SecurePass1` et `bob@test.com` / `SecurePass1` selon les fixtures actives).
 
-## Fonctionnalités livrées (v1.0.0)
+## Fonctionnalités livrées (v1.1.1)
 
 | Code | Périmètre |
 |------|-----------|
-| F1   | Authentification JWT + refresh single-use + CGU RGPD |
+| F1   | Authentification JWT + refresh single-use + consentement CGU horodaté (`cgu_acceptees_le`) |
 | F2   | Gestion des groupes (CRUD + rôles créateur/membre) |
-| F3   | CRUD dépenses avec catégories |
+| F3   | Dépenses : `POST`/`PUT`/`DELETE` (modification et suppression limitées à 24h après création, verrouillées si un remboursement du groupe est déjà validé) + catégories + `POST /api/expenses/scan-ticket` (OCR.space) |
 | F4   | Répartition 3 modes : équitable, personnalisée, pourcentage |
 | F5   | Algorithme greedy de réduction des dettes (jury n°1) |
 | F6   | Validation bipartite remboursements — machine à 5 états (jury n°2) |
@@ -121,8 +126,15 @@ Voir `src/DataFixtures/` après `doctrine:fixtures:load`. Le formateur peut se c
 | F9   | Notifications in-app avec référence polymorphe (jury n°3) |
 | RGPD | `GET /api/users/me/data` + `DELETE /api/users/me` |
 
-Détails par feature : `docs/features/`. Bilan Jalon 5 : `docs/jalon5-summary.md`.
+Détails par feature : [`docs/features/`](docs/features/). Bilan Jalon 5 : [`docs/jalon5-summary.md`](docs/jalon5-summary.md).
+
+## Documentation et suivi
+
+- Cahier des charges technique et dossier de projet v5.0 : remis hors repo (PDF Teams jury).
+- Suivi opérationnel : [GitHub Issues](https://github.com/Saar45/split-easy-api/issues) et [Pull Requests](https://github.com/Saar45/split-easy-api/pulls).
+- Frontend Angular/Ionic : [`Saar45/split-easy-app`](https://github.com/Saar45/split-easy-app).
 
 ## Statut
 
-v1.0.0 feature-complete et conforme au dossier v3.0.
+Tag courant : `v1.1.1`. Feature-complete et conforme au dossier de projet v5.0.
+Première livraison feature-complete : [`v1.0.0`](https://github.com/Saar45/split-easy-api/releases/tag/v1.0.0).
