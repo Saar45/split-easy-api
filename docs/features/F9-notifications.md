@@ -1,6 +1,6 @@
-# F9 — Notifications in-app
+# F9 - Notifications in-app
 
-Référence dossier : §III.5 (F9), §6.5 (entité Notification — point de défense jury n°3 référence polymorphe).
+Référence dossier : §III.5 (F9), §6.5 (entité Notification - point de défense jury n°3 référence polymorphe).
 
 ## Périmètre livré
 

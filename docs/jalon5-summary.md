@@ -1,4 +1,4 @@
-# Jalon 5 — Bilan de livraison Split-Easy v1.0.0
+# Jalon 5 - Bilan de livraison Split-Easy v1.0.0
 
 > Repos : `split-easy-api` (Symfony 7.4 / PHP 8.4 / MySQL 8) et `split-easy-app` (Angular 17 / Ionic).
 > Échéance Jalon 5 : 29 mai 2026. Livraison effective le 3 juin 2026.
@@ -12,7 +12,7 @@
 | F3   | Dépenses : CRUD avec catégories | livré |
 | F4   | Répartition 3 modes : équitable, personnalisée, pourcentage (surplus arrondi au payeur) | livré |
 | F5   | Algorithme greedy de réduction des dettes (point de défense jury n°1) | livré |
-| F6   | Validation bipartite des remboursements — machine à 5 états (jury n°2) | livré |
+| F6   | Validation bipartite des remboursements - machine à 5 états (jury n°2) | livré |
 | F7   | Invitations par lien unique (token 7j) | livré |
 | F8   | Statistiques agrégées par catégorie / membre / période | livré |
 | F9   | Notifications in-app avec référence polymorphe (jury n°3) | livré |
@@ -28,9 +28,9 @@
 
 ## Points de défense jury (préservés dans le code)
 
-1. **Greedy** (F5) — `DebtOptimizerService::optimize()` : appariement crédit max / dette max à chaque itération, transactions bornées par n-1. Commenté en français.
-2. **Machine à états** (F6) — `ReimbursementService` : transitions Propose → Valide / Conteste / Annule, transitions invalides rejetées en 409.
-3. **Référence polymorphe** (F9) — `Notification.reference_type` + `reference_id` sans FK ; intégrité gérée par `NotificationService::create()`. Permet une seule table pour 8 types d'événements.
+1. **Greedy** (F5) - `DebtOptimizerService::optimize()` : appariement crédit max / dette max à chaque itération, transactions bornées par n-1. Commenté en français.
+2. **Machine à états** (F6) - `ReimbursementService` : transitions Propose → Valide / Conteste / Annule, transitions invalides rejetées en 409.
+3. **Référence polymorphe** (F9) - `Notification.reference_type` + `reference_id` sans FK ; intégrité gérée par `NotificationService::create()`. Permet une seule table pour 8 types d'événements.
 
 ## Conformité dossier v3.0
 
