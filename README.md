@@ -105,17 +105,19 @@ split-easy-api/
 docker compose exec app php bin/phpunit
 ```
 
+Suite verte : 183 tests / 999 assertions.
+
 ## Comptes de test
 
 Voir `src/DataFixtures/` après `doctrine:fixtures:load`. Le formateur peut se connecter immédiatement avec les comptes seedés (typiquement `alice@test.com` / `SecurePass1` et `bob@test.com` / `SecurePass1` selon les fixtures actives).
 
-## Fonctionnalités livrées (v1.0.0)
+## Fonctionnalités livrées (v1.1.1)
 
 | Code | Périmètre |
 |------|-----------|
-| F1   | Authentification JWT + refresh single-use + CGU RGPD |
+| F1   | Authentification JWT + refresh single-use + consentement CGU horodaté (`cgu_acceptees_le`) |
 | F2   | Gestion des groupes (CRUD + rôles créateur/membre) |
-| F3   | CRUD dépenses avec catégories |
+| F3   | Dépenses : `POST`/`PUT`/`DELETE` (modification et suppression limitées à 24h après création, verrouillées si un remboursement du groupe est déjà validé) + catégories + `POST /api/expenses/scan-ticket` (OCR.space) |
 | F4   | Répartition 3 modes : équitable, personnalisée, pourcentage |
 | F5   | Algorithme greedy de réduction des dettes (jury n°1) |
 | F6   | Validation bipartite remboursements — machine à 5 états (jury n°2) |
