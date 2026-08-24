@@ -54,6 +54,8 @@ services:
   front:
     build:
       context: ../split-easy-app
+      args:
+        API_URL: http://localhost:${NGINX_HTTP_PORT:-8080}/api
     container_name: spliteasy_front
     profiles: ["dev"]
     depends_on:
